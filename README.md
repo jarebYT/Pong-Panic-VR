@@ -28,22 +28,14 @@ Le joueur incarne une vue à la première personne et interagit avec son environ
 
 ## 📂 Organisation du projet  
 
+```plaintext
 Assets/
 ├── Models/ → Modèles 3D low poly (mains, raquette, etc.)
 ├── Materials/ → Matériaux Unlit / Low Poly
 ├── Scripts/ → Scripts C# (gestion mains, inputs, gameplay)
 ├── Prefabs/ → Objets prêts à l'emploi (mains, raquette, balles)
 └── Scenes/ → Scènes Unity (test, menu, jeu principal)
-
----
-
-## 🎯 Objectif du projet  
-
-Créer une expérience **simple mais immersive en VR**, accessible et performante, avec une direction artistique **low poly**.  
-Le projet sert à la fois :  
-- d’exercice d’apprentissage sur la VR avec Unity,  
-- de base pour un futur jeu complet de **Ping Pong VR**.  
-
+```
 ---
 
 ## ▶️ Installation et lancement  
