@@ -1,0 +1,5 @@
+F:/Pong-Panic-VR/.utmp/RelWithDebInfo/3y674p63/arm64-v8a/CMakeFiles/edit_cache.dir
+F:/Pong-Panic-VR/.utmp/RelWithDebInfo/3y674p63/arm64-v8a/CMakeFiles/rebuild_cache.dir
+F:/Pong-Panic-VR/.utmp/RelWithDebInfo/3y674p63/arm64-v8a/GameActivity/CMakeFiles/game.dir
+F:/Pong-Panic-VR/.utmp/RelWithDebInfo/3y674p63/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+F:/Pong-Panic-VR/.utmp/RelWithDebInfo/3y674p63/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
