@@ -1,0 +1,10 @@
+# ninja log v5
+64	2479	7854236269423326	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	8637e8513e5faf61
+1	2523	7854236269846901	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	20e0e78d0744261e
+34	2553	7854236270177978	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	e1f7a84d0080180b
+105	2597	7854236270622641	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	46f106e1f77383c4
+23	2607	7854236270703429	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	9f4be234e41f672e
+48	2972	7854236274427409	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	b738ba199d4d0054
+12	3074	7854236275454137	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	fa0146385fbaea24
+131	3097	7854236275675971	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	ef19fc4f591715cd
+3099	3248	7854236277231651	D:/Unity/Projects/Pong Panic VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/1244151m/obj/arm64-v8a/libgame.so	75e36deecec82fc9
