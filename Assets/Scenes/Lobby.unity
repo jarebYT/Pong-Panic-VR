@@ -16258,60 +16258,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!1 &682460286
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 682460287}
-  - component: {fileID: 682460288}
-  m_Layer: 0
-  m_Name: Audio Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &682460287
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682460286}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1872269397}
-  m_Father: {fileID: 543450653286175200}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &682460288
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 682460286}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 130b1b4fd7dc9ab46ad5539c30b4aea7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  audioSource: {fileID: 1872269396}
-  playlist:
-  - {fileID: 8300000, guid: 2ba832da70e269b4d9433fd343cb0469, type: 3}
-  - {fileID: 8300000, guid: 8221eb96732a4dc4ab43ebc93e73f436, type: 3}
-  - {fileID: 8300000, guid: ea2d3b0abb8075841b6ac64c3be74ca2, type: 3}
-  - {fileID: 8300000, guid: c292454211e23944bb119916673d473c, type: 3}
-  - {fileID: 8300000, guid: f10c7f80d1b433c44a34f53b39055d8a, type: 3}
-  - {fileID: 8300000, guid: 2f6c2fe9a8c8cd2418a2a642e85a8c07, type: 3}
-  - {fileID: 8300000, guid: c17bb0c3c5bdb01438878217807ae6d6, type: 3}
 --- !u!4 &706564823 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 8413ade303c71f14dab38013100b45d2, type: 3}
@@ -27050,12 +26996,12 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
-  DopplerLevel: 1
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 22.65
   Pan2D: 0
@@ -27140,12 +27086,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1872269395}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.31366104, z: -0, w: 0.9495351}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0.31366104, z: -0, w: 0.949535}
+  m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 12.499998, y: 12.5, z: 12.499998}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 682460287}
+  m_Father: {fileID: 543450653286175200}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1879937037
 MonoBehaviour:
@@ -30314,8 +30260,8 @@ Transform:
   m_LocalScale: {x: 0.07999998, y: 0.08, z: 0.07999998}
   m_ConstrainProportionsScale: 1
   m_Children:
+  - {fileID: 1872269397}
   - {fileID: 865297463}
-  - {fileID: 682460287}
   - {fileID: 1682742280}
   m_Father: {fileID: 248086887}
   m_LocalEulerAnglesHint: {x: 0, y: 36.56, z: 0}
@@ -30789,6 +30735,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 543450653286175200}
+  - component: {fileID: 919132149567966043}
   m_Layer: 0
   m_Name: BoomBox
   m_TagString: Untagged
@@ -30796,6 +30743,26 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &919132149567966043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132149567966042}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8472c982d368a9c4793a0f343f015614, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoomboxPlaylist
+  audioSource: {fileID: 1872269396}
+  playlist:
+  - {fileID: 8300000, guid: 2ba832da70e269b4d9433fd343cb0469, type: 3}
+  - {fileID: 8300000, guid: f10c7f80d1b433c44a34f53b39055d8a, type: 3}
+  - {fileID: 8300000, guid: 8221eb96732a4dc4ab43ebc93e73f436, type: 3}
+  - {fileID: 8300000, guid: c292454211e23944bb119916673d473c, type: 3}
+  - {fileID: 8300000, guid: ea2d3b0abb8075841b6ac64c3be74ca2, type: 3}
+  - {fileID: 8300000, guid: c17bb0c3c5bdb01438878217807ae6d6, type: 3}
 --- !u!23 &940410286177284277
 MeshRenderer:
   m_ObjectHideFlags: 0
