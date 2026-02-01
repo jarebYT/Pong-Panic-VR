@@ -13,6 +13,8 @@ public class PingPongManager : MonoBehaviour
     [SerializeField] private GameObject enemyPaddle;
     [SerializeField] private int playerScore;
     [SerializeField] private int enemyScore;
+    [SerializeField] private Transform servicePointPlayer;
+    [SerializeField] private Transform servicePointEnemy;
     enum GameState
     {
         Start,
@@ -27,6 +29,7 @@ public class PingPongManager : MonoBehaviour
     {
         //Set la position des joueurs et/ou éléments de jeu
         //mettre GameState à Start avec un élément ex:bouton
+        SpawnBall(servicePointPlayer);
     }
 
     // Update is called once per frame
@@ -49,7 +52,6 @@ public class PingPongManager : MonoBehaviour
             default:
                 break;
         }
-        
     }
 
     void Service()
@@ -90,5 +92,10 @@ public class PingPongManager : MonoBehaviour
         //Afficher le gagnant
         //Proposer de rejouer ou de quitter
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void SpawnBall(Transform servicePoint)
+    {
+        Instantiate(ball, servicePoint);
     }
 }
