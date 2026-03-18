@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
     public GameObject paddle;
     public BoxCollider sideCollider;
     public Transform servicePoint;
+    public int countBallTouch;
 
     public Player(int initialScore, GameObject paddleObject, BoxCollider collider, Transform serviceLocation)
     {
@@ -14,6 +15,7 @@ public class Player : MonoBehaviour
         paddle = paddleObject;
         sideCollider = collider;
         servicePoint = serviceLocation;
+        countBallTouch = 0;
     }
 
 
