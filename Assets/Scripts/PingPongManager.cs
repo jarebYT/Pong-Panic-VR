@@ -16,7 +16,11 @@ public class PingPongManager : MonoBehaviour
     [SerializeField] private BoxCollider player2SideCollider;
     [SerializeField] private int player1Score;
     [SerializeField] private int player2Score;
+    [SerializeField] private GameObject ground;
 
+    private Player currentServer;
+    private Player otherPlayer;
+    private Player lastHitter;
     private Player player1;
     private Player player2;
     private int serviceCount = 0;
@@ -46,10 +50,10 @@ public class PingPongManager : MonoBehaviour
         switch (currentState)
         {
             case GameState.Service:
-                Service(player1, player2);
+                Service(currentServer, otherPlayer);
                 break;
             case GameState.Game:
-                Game();
+                Game(currentServer, otherPlayer);
                 break;
             case GameState.Score:
                 Score();
@@ -62,36 +66,38 @@ public class PingPongManager : MonoBehaviour
         }
     }
 
-    void Service(Player player1, Player player2)
+    void Service(Player player, Player ennemy)
     {
-        SpawnBall(player1.servicePoint);
-        if (ball.GetComponent<Collider>().bounds.Intersects(player1.sideCollider.bounds))
+        SpawnBall(player.servicePoint);
+        if (ball.GetComponent<Collider>().bounds.Intersects(player.sideCollider.bounds))
         {
-            if (ball.GetComponent<Collider>().bounds.Intersects(player2.sideCollider.bounds))
+            if (ball.GetComponent<Collider>().bounds.Intersects(ennemy.sideCollider.bounds))
             {
-                player1.score++;
+                player.score++;
                 currentState = GameState.Game;
             }
             else
             {
-                player2.score++;
+                ennemy.score++;
                 serviceCount++;
                 if (serviceCount >= 2)
                 {
                     serviceCount = 0;
-                    Service(player2, player1);
+                    currentServer = (currentServer == player1) ? player2 : player1;
+                    otherPlayer = (currentServer == player1) ? player2 : player1;
+                    Service(currentServer, otherPlayer);
                 }
                 else
                 {
-                    Service(player1, player2);
+                    Service(currentServer, otherPlayer);
                 }
             }
         }
     }
 
-    void Game()
+    void Game(Player player, Player ennemy)
     {
-        //Jeu en cours
+        lastHitter = player;
         //ne peux plus attraper la balle pendant le jeu
         ball.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>().enabled = false;
 

@@ -14,12 +14,8 @@ public class Ball : MonoBehaviour
         
     }
 
-    
-    private void OnTriggerEnter(Collider collision)
+    public void OnTriggerEnter(Collider other)
     {
-        if (collision.CompareTag("Ground"))
-        {
-            Destroy(gameObject);
-        }
+        Debug.Log("Touché !");
     }
 }
