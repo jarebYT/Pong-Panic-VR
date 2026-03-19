@@ -50,6 +50,7 @@ public class Test : MonoBehaviour
         tempPlayer = activePlayer;
         activePlayer = inactivePlayer;
         inactivePlayer = tempPlayer;
+
     }
 
     void Start()
@@ -66,9 +67,9 @@ public class Test : MonoBehaviour
         if (currentState == GameState.Game)
         {
             // Si la balle touche le sol
-            if (pingPongBall.transform.position.y < ground.transform.position.y)
+            if (pingPongBall.hasTouchedGround)
             {
-                if (lastCornerHitted = activePlayer.sideCollider)
+                if (lastCornerHitted == activePlayer.sideCollider)
                 {
                     inactivePlayer.score++;
                     currentState = GameState.Service;
@@ -81,11 +82,12 @@ public class Test : MonoBehaviour
             }
 
             //Change de joueur actif si le joueur inactif touche la balle
-            if (pingPongBall.OnTriggerEnter(inactivePlayer.paddle))
+            if (pingPongBall.canSwapPlayer)
             {
                 activePlayer.countBallTouch = 0;
                 SwitchActivePlayer();
                 activePlayer.countBallTouch++;
+                pingPongBall.canSwapPlayer = false;
             }
 
             //Si le joueur actif touche la balle plusieurs fois
@@ -97,7 +99,7 @@ public class Test : MonoBehaviour
             }
 
             //Si la balle touche le côté du joueur actif
-            if (pingPongBall.hitActiveSide(activePlayer.sideCollider))
+            if (pingPongBall.hitSameTable)
             {
                 inactivePlayer.score++;
                 SwitchActivePlayer();
