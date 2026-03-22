@@ -1,20 +1,9 @@
 using UnityEngine;
-
 public class Ball : MonoBehaviour
 {
-    private bool hasTouchedGround = false;
     private BoxCollider lastCornerHitted;
     private GameObject lastPaddleHitted;
-    private bool canSwapPlayer = false;
-    private bool hitSameTable = false;
-    public ballLastCorner lastCorner;
-
-    public enum ballLastCorner
-{
-    activePlayerSide,
-    inactivePlayerSide,
-    none
-}
+    public PingPongManager pingPongManager;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -22,11 +11,14 @@ public class Ball : MonoBehaviour
         {
             if (collision.gameObject != lastCornerHitted)
             {
-                lastCornerHitted = collision.gameObject.GetComponent<BoxCollider>();
+                pingPongManager.SwitchActivePlayer();
+                pingPongManager.lastCornerHitted = pingPongManager.inactivePlayer.sideCollider;
             }
             else if (collision.gameObject == lastCornerHitted)
             {
-                hitSameTable = true;
+                pingPongManager.Score(pingPongManager.inactivePlayer);
+                pingPongManager.ResetBall(pingPongManager.activePlayer.servicePoint);
+                pingPongManager.currentState = PingPongManager.GameState.Service;
             }
             Debug.Log("La balle touche la table !");
         }
@@ -36,7 +28,11 @@ public class Ball : MonoBehaviour
             if (collision.gameObject != lastPaddleHitted)
             {
                 lastPaddleHitted = collision.gameObject;
-                canSwapPlayer = true;
+                pingPongManager.SwitchActivePlayer();
+            }
+            else if (collision.gameObject == lastPaddleHitted)
+            {
+                pingPongManager.IncreaseBallTouch();
             }
             Debug.Log("La balle touche la raquette !");
         }
@@ -44,10 +40,7 @@ public class Ball : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             Debug.Log("La balle touche le sol !");
-            if(lastCornerHitted == collision.gameObject)
-            {
-                lastCorner = ballLastCorner.inactivePlayerSide;
-            }
+            pingPongManager.TouchGround();
             Destroy(gameObject);
         }
     }

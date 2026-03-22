@@ -7,6 +7,8 @@ TagManager:
   - Anchor
   - PlayerHand
   - Ground
+  - Paddle
+  - Table
   layers:
   - Default
   - TransparentFX
