@@ -124,26 +124,27 @@ public class VRHandFingerController : MonoBehaviour
     // remplace la ApplyCurl précédente par celle-ci
     void ApplyCurl(Transform[] bones, float t)
     {
-        if (bones == null || bones.Length == 0) return;
+    if (bones == null || bones.Length == 0) return;
 
-        // ex: bones.Length == 2 -> factors = [0.6, 1.0]
-        // ex: bones.Length == 3 -> factors = [0.4, 0.75, 1.0]
-        for (int i = 0; i < bones.Length; i++)
+    // 1. On détermine le multiplicateur selon la main
+    // Souvent, la main gauche nécessite l'inverse de la droite
+    float sideMultiplier = (side == HandSide.Left) ? -1f : 1f;
+
+    for (int i = 0; i < bones.Length; i++)
         {
-            var b = bones[i];
-            if (b == null || !restLocal.ContainsKey(b)) continue;
+        var b = bones[i];
+        if (b == null || !restLocal.ContainsKey(b)) continue;
 
-            // factor progressif : on veut que la dernière phalange plie le plus
-            float factor = (i + 1f) / bones.Length; // 0..1
-            // on remappe pour favoriser la dernière : pow pour courbe non linéaire
-            factor = Mathf.Pow(factor, 0.8f); // 0.8 => plus linéaire; 0.6 => accentue la dernière
+        float factor = (i + 1f) / bones.Length;
+        factor = Mathf.Pow(factor, 0.8f);
 
-            float angle = maxCurlAngle * factor * t;
+        // 2. On applique le multiplicateur à l'angle
+        float angle = maxCurlAngle * factor * t * sideMultiplier;
 
-            // Ajuste l'axe si besoin (X/Y/Z ou signe négatif)
-            Quaternion target = restLocal[b] * Quaternion.Euler(angle, 0f, 0f);
+        // 3. Appliquer sur l'axe X (vérifie bien que c'est le bon axe pour ta main gauche)
+        Quaternion target = restLocal[b] * Quaternion.Euler(angle, 0f, 0f);
 
-            b.localRotation = Quaternion.Slerp(b.localRotation, target, Time.deltaTime * 20f);
+        b.localRotation = Quaternion.Slerp(b.localRotation, target, Time.deltaTime * 20f);
         }
     }
 }
