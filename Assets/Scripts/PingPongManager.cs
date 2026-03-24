@@ -4,6 +4,10 @@ using UnityEngine.SceneManagement;
 
 public class PingPongManager : MonoBehaviour
 {
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    [SerializeField] private BoxCollider playerSideCollider;
+    [SerializeField] private GameObject ball;
     [SerializeField] private GameObject player1Paddle;
     [SerializeField] private GameObject player2Paddle;
     [SerializeField] private Transform player1ServicePoint;
@@ -13,94 +17,108 @@ public class PingPongManager : MonoBehaviour
     [SerializeField] private int player1Score;
     [SerializeField] private int player2Score;
     [SerializeField] private GameObject ground;
-    [SerializeField] private Ball pingPongBall;
-    public Player activePlayer;
-    public Player inactivePlayer;
-    public Player player1;
-    public Player player2;
-    private Player tempPlayer;
-    public BoxCollider lastCornerHitted;
 
-    public GameState currentState;
+    private Player currentServer;
+    private Player otherPlayer;
+    private Player lastHitter;
+    private Player player1;
+    private Player player2;
+    private int serviceCount = 0;
 
-    public enum GameState
+    enum GameState
     {
         Service,
         Game,
-        Inactive
+        Score,
+        End
     }
 
-    public Ball ResetBall(Transform servicePoint)
-    {
-        return Instantiate(pingPongBall, servicePoint);
-    }
-
-    public void CheckScore()
-    {
-        if (activePlayer.score > 11 && inactivePlayer.score <= activePlayer.score - 2)
-        {
-            //TODO fonction fin de jeu
-            currentState = GameState.Inactive;
-        }
-    }
-
-    //Change de joueur actif
-    public void SwitchActivePlayer()
-    {
-        activePlayer.countBallTouch = 0;
-        tempPlayer = activePlayer;
-        activePlayer = inactivePlayer;
-        inactivePlayer = tempPlayer;
-        activePlayer.countBallTouch++;
-    }
-
-    public void Score(Player player)
-    {
-        player.score++;
-        CheckScore();
-        ResetBall(activePlayer.servicePoint);
-        Debug.Log("Player 1 Score: " + activePlayer.score);
-        Debug.Log("Player 2 Score: " + inactivePlayer.score);
-    }
-
-    public  void TouchGround()
-    {
-        if (lastCornerHitted == activePlayer.sideCollider)
-        {
-            Score(inactivePlayer);
-        }
-        else
-        {
-            Score(activePlayer);
-        }
-        ResetBall(activePlayer.servicePoint);
-    }
-
-    public void IncreaseBallTouch()
-    {
-        activePlayer.countBallTouch++;
-    }
+    private GameState currentState;
 
     void Start()
     {
-        activePlayer = player1;
-        inactivePlayer = player2;
-        ResetBall(activePlayer.servicePoint);
+        //Set la position des joueurs et/ou éléments de jeu
+        //mettre GameState à Start avec un élément ex:bouton
+        player1 = new(player1Score, player1Paddle, player1SideCollider, player1ServicePoint);
+        player2 = new(player2Score, player2Paddle, player2SideCollider, player2ServicePoint);
         currentState = GameState.Service;
-        //désactiver de pouvoir attraper la balle
     }
 
+    // Update is called once per frame
     void Update()
     {
-        if (currentState == GameState.Game)
+        switch (currentState)
         {
-            //Si le joueur actif touche la balle plusieurs fois
-            if (activePlayer.countBallTouch > 1)
+            case GameState.Service:
+                Service(currentServer, otherPlayer);
+                break;
+            case GameState.Game:
+                Game(currentServer, otherPlayer);
+                break;
+            case GameState.Score:
+                Score();
+                break;
+            case GameState.End:
+                End();
+                break;
+            default:
+                break;
+        }
+    }
+
+    void Service(Player player, Player ennemy)
+    {
+        SpawnBall(player.servicePoint);
+        if (ball.GetComponent<Collider>().bounds.Intersects(player.sideCollider.bounds))
+        {
+            if (ball.GetComponent<Collider>().bounds.Intersects(ennemy.sideCollider.bounds))
             {
-                Score(inactivePlayer);
-                SwitchActivePlayer();
-                currentState = GameState.Service;
+                player.score++;
+                currentState = GameState.Game;
             }
+            else
+            {
+                ennemy.score++;
+                serviceCount++;
+                if (serviceCount >= 2)
+                {
+                    serviceCount = 0;
+                    currentServer = (currentServer == player1) ? player2 : player1;
+                    otherPlayer = (currentServer == player1) ? player2 : player1;
+                    Service(currentServer, otherPlayer);
+                }
+                else
+                {
+                    Service(currentServer, otherPlayer);
+                }
+            }
+        }
+    }
+
+    void Game(Player player, Player ennemy)
+    {
+        lastHitter = player;
+        //ne peux plus attraper la balle pendant le jeu
+        ball.GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>().enabled = false;
+
+        //Vérifier si un joueur a marqué
+        currentState = GameState.Score;
+    }
+
+    int Score()
+    {
+        //afficher les scores pendant 3 secondes
+        Debug.Log("Player 1 Score: " + player1.score);
+        Debug.Log("Player 2 Score: " + player2.score);
+        if (player1.score >= 11 || player2.score >= 11)
+        {
+            currentState = GameState.End;
+            return 0;
+        }
+        else
+        {
+            currentState = GameState.Service;
+            return 0;
         }
     }
 
@@ -109,5 +127,10 @@ public class PingPongManager : MonoBehaviour
         //Afficher le gagnant
         //Proposer de rejouer ou de quitter
         SceneManager.LoadScene("MainMenu");
+    }
+
+    public void SpawnBall(Transform servicePoint)
+    {
+        Instantiate(ball, servicePoint);
     }
 }

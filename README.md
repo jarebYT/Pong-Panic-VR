@@ -47,7 +47,7 @@ Assets/
 
 1. Clone the repo :  
    ```bash
-   - git clone https://github.com/RAS-Studios/Pong-Panic-VR.git
+   - git clone https://github.com/SARL-Studios/Pong-Panic-VR.git
    - Open the project in Unity Editor Version 6000.2.6f2.
    - Ensure that the Android Build Support module is installed.
    - Connect your Meta Quest 2, build for Android, then sideload the .apk using any tool.
