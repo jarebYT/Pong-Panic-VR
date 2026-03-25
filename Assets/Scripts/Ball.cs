@@ -1,21 +1,47 @@
 using UnityEngine;
-
 public class Ball : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    private BoxCollider lastCornerHitted;
+    private GameObject lastPaddleHitted;
+    public PingPongManager pingPongManager;
 
-    // Update is called once per frame
-    void Update()
+    void OnCollisionEnter(Collision collision)
     {
-        
-    }
+        if (collision.gameObject.CompareTag("Table"))
+        {
+            if (collision.gameObject != lastCornerHitted)
+            {
+                pingPongManager.SwitchActivePlayer();
+                pingPongManager.lastCornerHitted = pingPongManager.inactivePlayer.sideCollider;
+            }
+            else if (collision.gameObject == lastCornerHitted)
+            {
+                pingPongManager.Score(pingPongManager.inactivePlayer);
+                pingPongManager.ResetBall(pingPongManager.activePlayer.servicePoint);
+                pingPongManager.currentState = PingPongManager.GameState.Service;
+            }
+            Debug.Log("La balle touche la table !");
+        }
 
-    public void OnTriggerEnter(Collider other)
-    {
-        Debug.Log("Touché !");
+        if (collision.gameObject.CompareTag("Paddle"))
+        {
+            if (collision.gameObject != lastPaddleHitted)
+            {
+                lastPaddleHitted = collision.gameObject;
+                pingPongManager.SwitchActivePlayer();
+            }
+            else if (collision.gameObject == lastPaddleHitted)
+            {
+                pingPongManager.IncreaseBallTouch();
+            }
+            Debug.Log("La balle touche la raquette !");
+        }
+
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            Debug.Log("La balle touche le sol !");
+            pingPongManager.TouchGround();
+            Destroy(gameObject);
+        }
     }
 }
