@@ -41,6 +41,7 @@ public class PingPongManager : MonoBehaviour
         {
             //TODO fonction fin de jeu
             currentState = GameState.Inactive;
+            End();
         }
     }
 
@@ -101,13 +102,19 @@ public class PingPongManager : MonoBehaviour
                 SwitchActivePlayer();
                 currentState = GameState.Service;
             }
+        }else if (currentState == GameState.Service)
+        {
+            if (activePlayer.countBallTouch > 2)
+            {
+                Score(inactivePlayer);
+                SwitchActivePlayer();
+                currentState = GameState.Service;
+            } 
         }
     }
 
     void End()
     {
-        //Afficher le gagnant
-        //Proposer de rejouer ou de quitter
-        SceneManager.LoadScene("MainMenu");
+        Debug.Log("Le gagnant est : " + activePlayer.name + " avec un score de " + activePlayer.score);
     }
 }
