@@ -257,23 +257,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 304833158}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 61971df827699f24ab6cf2f0c9d05f11, type: 3}
+  m_Script: {fileID: 11500000, guid: 2ed0fef02ff299d46bc933211838cddf, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Test
-  player1Paddle: {fileID: 397607134}
-  player2Paddle: {fileID: 320127531}
-  player1ServicePoint: {fileID: 390536114}
-  player2ServicePoint: {fileID: 588787388}
-  player1SideCollider: {fileID: 2143479529}
-  player2SideCollider: {fileID: 1019170865}
+  m_EditorClassIdentifier: Assembly-CSharp::PingPongManager
+  player1Paddle: {fileID: 0}
+  player2Paddle: {fileID: 0}
+  player1ServicePoint: {fileID: 0}
+  player2ServicePoint: {fileID: 0}
+  player1SideCollider: {fileID: 0}
+  player2SideCollider: {fileID: 0}
   player1Score: 0
   player2Score: 0
-  ground: {fileID: 1029778362}
-  pingPongBall: {fileID: -365560733594198908, guid: 5fecca7fcae2d06439e097fb18e80a25, type: 3}
+  ground: {fileID: 0}
+  pingPongBall: {fileID: 0}
   activePlayer: {fileID: 0}
   inactivePlayer: {fileID: 0}
+  player1: {fileID: 0}
+  player2: {fileID: 0}
   lastCornerHitted: {fileID: 0}
-  currentState: 2
+  currentState: 0
 --- !u!1 &320127531 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8733148417151412701, guid: f49f097561511dd499970e7f53740fdd, type: 3}

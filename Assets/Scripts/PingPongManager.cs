@@ -101,6 +101,14 @@ public class PingPongManager : MonoBehaviour
                 SwitchActivePlayer();
                 currentState = GameState.Service;
             }
+        }else if (currentState == GameState.Service)
+        {
+           if (activePlayer.countBallTouch > 2)
+            {
+                Score(inactivePlayer);
+                SwitchActivePlayer();
+                currentState = GameState.Service;
+            } 
         }
     }
 
