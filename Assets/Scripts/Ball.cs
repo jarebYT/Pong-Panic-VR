@@ -1,81 +1,143 @@
 using UnityEngine;
+using UnityEngine.Events;
+
+/// <summary>
+/// Handles ball physics, collisions, and game state updates.
+/// Communicates with PingPongManager through clearly defined events.
+/// </summary>
 public class Ball : MonoBehaviour
 {
-    private BoxCollider lastCornerHitted;
     private GameObject lastPaddleHitted;
+    private GameObject lastTableSideTouched;
     public PingPongManager pingPongManager;
+    private Rigidbody rb;
 
-    void OnCollisionEnter(Collision collision)
+    // Events
+    public static UnityEvent<Ball> OnBallDestroyed = new UnityEvent<Ball>();
+    public UnityEvent OnTableHit = new UnityEvent();
+    public UnityEvent OnPaddleHit = new UnityEvent();
+
+    private void Start()
     {
-        if (collision.gameObject.CompareTag("Table"))
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
         {
-            //si la balle touche l'autre côté
-            if (collision.gameObject != lastCornerHitted)
-            {
-                if (pingPongManager.currentState == PingPongManager.GameState.Game)
-                {
-                    pingPongManager.SwitchActivePlayer();
-                    pingPongManager.lastCornerHitted = pingPongManager.inactivePlayer.sideCollider;
-                }
-                else if (pingPongManager.currentState == PingPongManager.GameState.Service)
-                {
-                    if(pingPongManager.activePlayer.countServiceSideTouch == 1)
-                    {
-                        pingPongManager.activePlayer.countServiceSideTouch = 0;
-                        pingPongManager.currentState = PingPongManager.GameState.Game;
-                    }
-                    else
-                    {
-                        pingPongManager.Score(pingPongManager.inactivePlayer);
-                        pingPongManager.ResetBall(pingPongManager.activePlayer.servicePoint);
-                        pingPongManager.currentState = PingPongManager.GameState.Service;
-                    }
-                }
-                
-            }
-            //si la balle touche le même côté
-            else if (collision.gameObject == lastCornerHitted)
-            {
-                if (pingPongManager.currentState == PingPongManager.GameState.Game)
-                {
-                    pingPongManager.Score(pingPongManager.inactivePlayer);
-                    pingPongManager.ResetBall(pingPongManager.activePlayer.servicePoint);
-                    pingPongManager.currentState = PingPongManager.GameState.Service;
-                }
-                else if (pingPongManager.currentState == PingPongManager.GameState.Service)
-                {
-                    pingPongManager.activePlayer.countServiceSideTouch++;
-                    if (pingPongManager.activePlayer.countServiceSideTouch > 2)
-                    {
-                        pingPongManager.Score(pingPongManager.inactivePlayer);
-                        pingPongManager.ResetBall(pingPongManager.activePlayer.servicePoint);
-                        pingPongManager.currentState = PingPongManager.GameState.Service;
-                    }
-                }
-                
-            }
-            Debug.Log("La balle touche la table !");
-        }
-
-        if (collision.gameObject.CompareTag("Paddle"))
-        {
-            if (collision.gameObject != lastPaddleHitted)
-            {
-                lastPaddleHitted = collision.gameObject;
-                pingPongManager.SwitchActivePlayer();
-            }
-            else if (collision.gameObject == lastPaddleHitted)
-            {
-                pingPongManager.IncreaseBallTouch();
-            }
-            Debug.Log("La balle touche la raquette !");
-        }
-
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            Debug.Log("La balle touche le sol !");
-            pingPongManager.TouchGround();
-            Destroy(gameObject);
+            Debug.LogError("Ball must have a Rigidbody component!");
         }
     }
+
+    /// <summary>
+    /// Set the PingPongManager reference
+    /// </summary>
+    public void SetPingPongManager(PingPongManager manager)
+    {
+        pingPongManager = manager;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        // TABLE COLLISION
+        if (collision.gameObject.CompareTag("Table"))
+        {
+            HandleTableCollision(collision.gameObject);
+        }
+        // PADDLE COLLISION
+        else if (collision.gameObject.CompareTag("Paddle"))
+        {
+            HandlePaddleCollision(collision.gameObject);
+        }
+        // GROUND COLLISION
+        else if (collision.gameObject.CompareTag("Ground"))
+        {
+            HandleGroundCollision();
+        }
+    }
+
+    /// <summary>
+    /// Handle ball hitting the table
+    /// Determines if ball changed sides or stayed on same side
+    /// </summary>
+    private void HandleTableCollision(GameObject tableCollider)
+    {
+        if (pingPongManager == null)
+        {
+            Debug.LogError("Ball has no PingPongManager reference!");
+            return;
+        }
+
+        // If this is the first table touch (or different side)
+        if (lastTableSideTouched != tableCollider)
+        {
+            lastTableSideTouched = tableCollider;
+
+            if (pingPongManager.currentState == PingPongManager.GameState.Game)
+            {
+                // Player switched successfully
+                pingPongManager.OnTableHit(tableCollider);
+            }
+            else if (pingPongManager.currentState == PingPongManager.GameState.Service)
+            {
+                // Service: first touch of own side allowed
+                pingPongManager.OnServiceTableHit(tableCollider);
+            }
+        }
+        // Ball hit same side of table again
+        else if (lastTableSideTouched == tableCollider)
+        {
+            // Double touch on same side = fault
+            pingPongManager.OnDoubleTouchSameSide(tableCollider);
+        }
+
+        OnTableHit.Invoke();
+        Debug.Log($"Ball hit table: {tableCollider.name}");
+    }
+
+    /// <summary>
+    /// Handle ball hitting a paddle
+    /// Track which paddle was hit last
+    /// </summary>
+    private void HandlePaddleCollision(GameObject paddle)
+    {
+        if (pingPongManager == null) return;
+
+        // Different paddle = switch player
+        if (paddle != lastPaddleHitted)
+        {
+            lastPaddleHitted = paddle;
+            pingPongManager.OnPaddleHit(paddle);
+        }
+        // Same paddle again = additional touch (counts as fault if > 1)
+        else
+        {
+            pingPongManager.OnAdditionalPaddleTouch(paddle);
+        }
+
+        OnPaddleHit.Invoke();
+        Debug.Log($"Ball hit paddle: {paddle.name}");
+    }
+
+    /// <summary>
+    /// Handle ball hitting the ground (out of play)
+    /// The player whose side it touched last loses the point
+    /// </summary>
+    private void HandleGroundCollision()
+    {
+        if (pingPongManager == null) return;
+
+        pingPongManager.OnBallOutOfPlay(lastTableSideTouched);
+        OnBallDestroyed.Invoke(this);
+        
+        Debug.Log("Ball hit ground - point awarded");
+        Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// Reset ball state for new rally
+    /// </summary>
+    public void ResetBallState()
+    {
+        lastPaddleHitted = null;
+        lastTableSideTouched = null;
+    }
 }
+
