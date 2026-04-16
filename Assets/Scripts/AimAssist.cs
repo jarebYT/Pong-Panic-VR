@@ -13,12 +13,9 @@ public class AimAssist : MonoBehaviour
     [SerializeField] private float tableWidth = 1.525f;            // Standard ping pong table width
     [SerializeField] private float detectionDistance = 2f;         // How far to look ahead
     [SerializeField] private Vector3 tableCenter = Vector3.zero;   // Center of table in world space
-    [SerializeField] private float maxCorrectionTime = 0.5f;       // Stop assisting after X seconds
 
     private Rigidbody rb;
     private Ball ball;
-    private float ballLaunchTime;
-    private bool isInAssistWindow = false;
 
     private void Start()
     {
@@ -34,7 +31,7 @@ public class AimAssist : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!enableAimAssist || rb == null || rb.velocity.magnitude < 0.1f)
+        if (!enableAimAssist || rb == null || rb.linearVelocity.magnitude < 0.1f)
             return;
 
         // Only assist if ball is traveling horizontally toward table
@@ -50,13 +47,13 @@ public class AimAssist : MonoBehaviour
     private bool IsNearingTable()
     {
         // Predict where ball will be in 0.1 seconds
-        Vector3 predictedPosition = transform.position + (rb.velocity * 0.1f);
+        Vector3 predictedPosition = transform.position + (rb.linearVelocity * 0.1f);
 
         // Check if ball is approaching table horizontally
         float distanceToTableCenter = Mathf.Abs(predictedPosition.x - tableCenter.x);
 
         return distanceToTableCenter < detectionDistance && 
-               rb.velocity.y < 2f; // Not going straight up
+               rb.linearVelocity.y < 2f; // Not going straight up
     }
 
     /// <summary>
@@ -64,7 +61,7 @@ public class AimAssist : MonoBehaviour
     /// </summary>
     private void ApplyTrajectoryCorrection()
     {
-        Vector3 velocity = rb.velocity;
+        Vector3 velocity = rb.linearVelocity;
         Vector3 correctionForce = Vector3.zero;
 
         // Calculate distance from table center

@@ -14,12 +14,12 @@ public class BallManager : MonoBehaviour
     private void OnEnable()
     {
         // Subscribe to ball destruction event
-        Ball.OnBallDestroyed += HandleBallDestroyed;
+        Ball.OnBallDestroyed.AddListener(HandleBallDestroyed);
     }
 
     private void OnDisable()
     {
-        Ball.OnBallDestroyed -= HandleBallDestroyed;
+        Ball.OnBallDestroyed.RemoveListener(HandleBallDestroyed);
     }
 
     /// <summary>

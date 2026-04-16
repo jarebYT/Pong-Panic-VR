@@ -7,7 +7,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 /// </summary>
 public class ServiceHandler : MonoBehaviour
 {
-    [SerializeField] private XRGrabInteractable grabInteractable;
+    [SerializeField] private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
     [SerializeField] private PingPongManager pingPongManager;
     [SerializeField] private Rigidbody rb;
     
@@ -18,7 +18,7 @@ public class ServiceHandler : MonoBehaviour
     private void Start()
     {
         if (grabInteractable == null)
-            grabInteractable = GetComponent<XRGrabInteractable>();
+            grabInteractable = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
 
         if (rb == null)
             rb = GetComponent<Rigidbody>();
@@ -44,7 +44,7 @@ public class ServiceHandler : MonoBehaviour
         // Disable physics while held
         if (rb != null)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
             rb.isKinematic = true;
         }
@@ -65,7 +65,7 @@ public class ServiceHandler : MonoBehaviour
 
             // Calculate throw velocity from hand movement
             Vector3 throwVelocity = (transform.position - lastFramePosition) / Time.deltaTime;
-            rb.velocity = throwVelocity;
+            rb.linearVelocity = throwVelocity;
         }
 
         hasBeenServed = true;
