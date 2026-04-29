@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.atteneder.gltfast": "https://github.com/atteneder/glTFast.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.collab-proxy": "2.11.3",
     "com.unity.feature.development": "1.0.2",
@@ -8,6 +9,7 @@
     "com.unity.learn.iet-framework": "5.0.2",
     "com.unity.multiplayer.center": "1.0.1",
     "com.unity.render-pipelines.universal": "17.3.0",
+    "com.unity.splines": "2.8.4",
     "com.unity.timeline": "1.8.10",
     "com.unity.xr.androidxr-openxr": "1.1.0",
     "com.unity.xr.arfoundation": "6.3.2",
