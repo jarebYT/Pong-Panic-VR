@@ -3862,6 +3862,7 @@ Transform:
   - {fileID: 7794472965766756981}
   - {fileID: 706564823}
   - {fileID: 911360929568006939}
+  - {fileID: 1434018957925919944}
   - {fileID: 6082428475783790103}
   - {fileID: 6102457398829705050}
   - {fileID: 7189223068635091138}
@@ -21157,6 +21158,7 @@ GameObject:
   - component: {fileID: 608134779}
   - component: {fileID: 608134778}
   - component: {fileID: 608134777}
+  - component: {fileID: 608134781}
   m_Layer: 5
   m_Name: LoginPasswordField
   m_TagString: Untagged
@@ -21343,6 +21345,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 608134775}
   m_CullTransparentMesh: 1
+--- !u!114 &608134781
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 608134775}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f724d74861a8d49bf9c7f2e1b403d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputFieldKeyboardHook
+  keyboard: {fileID: 1530930183}
+  playerCamera: {fileID: 928270978}
 --- !u!64 &608413548
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -40062,6 +40078,7 @@ GameObject:
   - component: {fileID: 1570728525}
   - component: {fileID: 1570728524}
   - component: {fileID: 1570728523}
+  - component: {fileID: 1570728527}
   m_Layer: 5
   m_Name: LoginEmailField
   m_TagString: Untagged
@@ -40248,6 +40265,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1570728521}
   m_CullTransparentMesh: 1
+--- !u!114 &1570728527
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1570728521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8f724d74861a8d49bf9c7f2e1b403d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InputFieldKeyboardHook
+  keyboard: {fileID: 1530930183}
+  playerCamera: {fileID: 928270978}
 --- !u!64 &1590987905
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -52574,12 +52605,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5652247741647623437}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.27424255, y: 0.05933404, z: -1.1390153}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: -4.3485727, y: 1.132872, z: 4.6924615}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 6082428475783790103}
+  m_Father: {fileID: 248086887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1438024398582513935
 MeshFilter:
@@ -56226,7 +56257,6 @@ Transform:
   - {fileID: 3225846270525661333}
   - {fileID: 1916675872026512292}
   - {fileID: 7790835952016103455}
-  - {fileID: 1434018957925919944}
   m_Father: {fileID: 248086887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &6098218181484076331
