@@ -19,5 +19,10 @@ public class GameModeManager : MonoBehaviour
         Debug.Log("Training Mode Selected");
         SceneManager.LoadScene("Training");
     }
+    public void OnClickLeaderBoard()
+    {
+        Debug.Log("Leaderboard Selected");
+        TVPanelManager.Instance.ShowLeaderboard();
+    }
 
 }

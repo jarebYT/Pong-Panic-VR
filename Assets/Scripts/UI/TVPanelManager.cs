@@ -7,6 +7,7 @@ public class TVPanelManager : MonoBehaviour
     public GameObject LoginPanel;
     public GameObject RegisterPanel;
     public GameObject GamePanel;
+    public GameObject LeaderboardPanel;
 
     void Awake()
     {
@@ -24,7 +25,7 @@ public class TVPanelManager : MonoBehaviour
         LoginPanel.SetActive(true);
         RegisterPanel.SetActive(false);
         GamePanel.SetActive(false);
-        //Leaderboard.setActive(false);
+        LeaderboardPanel.SetActive(false);
     }
 
     public void ShowRegister()
@@ -32,7 +33,7 @@ public class TVPanelManager : MonoBehaviour
         LoginPanel.SetActive(false);
         RegisterPanel.SetActive(true);
         GamePanel.SetActive(false);
-        //Leaderboard.setActive(false);
+        LeaderboardPanel.SetActive(false);
     }
 
     public void ShowModeSelection()
@@ -40,14 +41,14 @@ public class TVPanelManager : MonoBehaviour
         LoginPanel.SetActive(false);
         RegisterPanel.SetActive(false);
         GamePanel.SetActive(true);
-        //Leaderboard.setActive(false);
+        LeaderboardPanel.SetActive(false);
     }
 
-    //public void ShowLeaderboard()
-    //{
-    //    LoginPanel.SetActive(false);
-    //    RegisterPanel.SetActive(false);
-    //    GamePanel.SetActive(false);
-    //    Leaderboard.setActive(true);
-    //}
+    public void ShowLeaderboard()
+    {
+       LoginPanel.SetActive(false);
+        RegisterPanel.SetActive(false);
+        GamePanel.SetActive(false);
+        LeaderboardPanel.SetActive(true);
+    }
 }
