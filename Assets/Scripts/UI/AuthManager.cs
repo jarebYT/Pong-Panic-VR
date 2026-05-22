@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Text;
@@ -19,7 +20,6 @@ public class AuthManager : MonoBehaviour
     public TMP_InputField registerEmailField;
     public TMP_InputField registerPasswordField;
     public TextMeshProUGUI registerErrorText;
-
 
 
     [System.Serializable] public class LoginRequest { public string email, password;}
@@ -68,7 +68,7 @@ public class AuthManager : MonoBehaviour
             loginPasswordField.text = "";
 
             Debug.Log("Login OK ->" + PlayerSession.Username);
-
+            TVPanelManager.Instance.ShowModeSelection();
         } 
         else
         {
@@ -76,6 +76,55 @@ public class AuthManager : MonoBehaviour
         }
     }
 
+    // Register
+    public void OnRegisterClick()
+    {
+        string username = registerUsernameField.text;
+        string email = registerEmailField.text;
+        string password = registerPasswordField.text;
+        if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            registerErrorText.text = "Please fill in all fields.";
+            return;
+        }
+        StartCoroutine(Register(username, email, password));
+    }
 
+    IEnumerator Register (string username, string email, string password)
+    {
+        AnimateLoadingText();
+        string json = JsonUtility.ToJson(new RegisterRequest { username = username,email = email, password = password });
+        var request = new UnityWebRequest(BASE_URL + "/register", "POST");
+        request.uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(json));
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
 
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            var response = JsonUtility.FromJson<LoginResponse>(request.downloadHandler.text);
+            Debug.Log("Register OK ->" + username);
+            registerUsernameField.text = "";
+            registerEmailField.text = "";
+            registerPasswordField.text = "";
+            registerErrorText.text = "Registration successful! Please log in.";
+        }
+        else
+        {
+            registerErrorText.text = request.responseCode == 400 ? "Email already in use" : "Connection error. Please try again!";
+        }
+    }
+
+    IEnumerator AnimateLoadingText()
+    {
+        while (true)
+        {
+            for (int i = 1; i <= 3; i++)
+            {
+                registerErrorText.text = "Creating account" + new string('.', i);
+                yield return new WaitForSeconds(0.5f);
+            }
+        }
+    }
 }
