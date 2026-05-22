@@ -65,6 +65,9 @@ public class Ball : MonoBehaviour
             return;
         }
 
+        // Only process if ball hasn't been destroyed
+        if (gameObject == null) return;
+
         // If this is the first table touch (or different side)
         if (lastTableSideTouched != tableCollider)
         {
@@ -124,11 +127,20 @@ public class Ball : MonoBehaviour
     {
         if (pingPongManager == null) return;
 
+        // Play poof effect
+        BallFeedback feedback = GetComponent<BallFeedback>();
+        if (feedback != null)
+        {
+            feedback.PlayPoofEffect();
+        }
+
         pingPongManager.OnBallOutOfPlay(lastTableSideTouched);
         OnBallDestroyed.Invoke(this);
         
         Debug.Log("Ball hit ground - point awarded");
-        Destroy(gameObject);
+        
+        // Destroy after a brief delay to allow poof animation
+        Destroy(gameObject, 0.5f);
     }
 
     /// <summary>
@@ -138,6 +150,21 @@ public class Ball : MonoBehaviour
     {
         lastPaddleHitted = null;
         lastTableSideTouched = null;
+        
+        // Reset physics state
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+        
+        // Reset position to service point
+        if (pingPongManager != null && pingPongManager.GetActivePlayer() != null)
+        {
+            transform.position = pingPongManager.GetActivePlayer().ServicePoint.position;
+        }
+        
+        Debug.Log("Ball state reset - ready for service");
     }
 }
 

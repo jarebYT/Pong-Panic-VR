@@ -9,10 +9,13 @@ public class AimAssist : MonoBehaviour
 {
     [Header("Aim Assist Settings")]
     [SerializeField] private bool enableAimAssist = true;
-    [SerializeField] private float assistForceMultiplier = 0.15f;  // Subtle correction
+    [SerializeField] private float assistForceMultiplier = 0.12f;  // Subtle correction
     [SerializeField] private float tableWidth = 1.525f;            // Standard ping pong table width
-    [SerializeField] private float detectionDistance = 2f;         // How far to look ahead
+    [SerializeField] private float detectionDistance = 3f;         // How far to look ahead
     [SerializeField] private Vector3 tableCenter = Vector3.zero;   // Center of table in world space
+
+    [Header("Gravity Assist")]
+    [SerializeField] private bool enableGravityAssist = true;
 
     private Rigidbody rb;
     private Ball ball;
@@ -26,38 +29,69 @@ public class AimAssist : MonoBehaviour
         {
             Debug.LogWarning("AimAssist: Rigidbody not found on ball");
             enabled = false;
+            return;
         }
+
+        // Apply gravity assist by modifying physics
+        if (enableGravityAssist)
+        {
+            ApplyGravityAssist();
+        }
+
+        Debug.Log($"[AimAssist] Initialized - Aim Assist: {enableAimAssist}, Gravity Assist: {enableGravityAssist}");
     }
 
     private void FixedUpdate()
     {
-        if (!enableAimAssist || rb == null || rb.linearVelocity.magnitude < 0.1f)
+        if (!enableAimAssist || rb == null)
             return;
 
-        // Only assist if ball is traveling horizontally toward table
-        if (IsNearingTable())
+        // Check if ball is moving and in a meaningful trajectory
+        float speed = rb.linearVelocity.magnitude;
+        if (speed < 0.5f)
+            return;
+
+        // Apply aim assist
+        if (ShouldApplyCorrection())
         {
             ApplyTrajectoryCorrection();
         }
     }
 
     /// <summary>
-    /// Check if ball is nearing the table
+    /// Apply stronger gravity for easier gameplay
     /// </summary>
-    private bool IsNearingTable()
+    private void ApplyGravityAssist()
     {
-        // Predict where ball will be in 0.1 seconds
-        Vector3 predictedPosition = transform.position + (rb.linearVelocity * 0.1f);
-
-        // Check if ball is approaching table horizontally
-        float distanceToTableCenter = Mathf.Abs(predictedPosition.x - tableCenter.x);
-
-        return distanceToTableCenter < detectionDistance && 
-               rb.linearVelocity.y < 2f; // Not going straight up
+        if (rb != null)
+        {
+            // Increase downward gravity
+            rb.mass = Mathf.Max(rb.mass * 0.5f, 0.001f); // Lighter ball falls faster
+            Debug.Log($"[AimAssist] Gravity assist applied - mass reduced to {rb.mass}");
+        }
     }
 
     /// <summary>
-    /// Apply subtle correction to trajectory
+    /// Check if ball needs trajectory correction
+    /// </summary>
+    private bool ShouldApplyCorrection()
+    {
+        Vector3 velocity = rb.linearVelocity;
+
+        // Only assist if ball is traveling relatively horizontally (not straight down)
+        if (Mathf.Abs(velocity.y) > Mathf.Abs(velocity.x) * 2f)
+            return false;
+
+        // Check if ball is nearing the table (predict 0.15 seconds ahead)
+        Vector3 predictedPosition = transform.position + (velocity * 0.15f);
+        
+        // Ball should be approaching table area (Y close to 0, X and Z in bounds)
+        return Mathf.Abs(predictedPosition.y) < 1f && 
+               Mathf.Abs(predictedPosition.x - tableCenter.x) < detectionDistance;
+    }
+
+    /// <summary>
+    /// Apply subtle correction to keep ball on table
     /// </summary>
     private void ApplyTrajectoryCorrection()
     {
@@ -65,28 +99,19 @@ public class AimAssist : MonoBehaviour
         Vector3 correctionForce = Vector3.zero;
 
         // Calculate distance from table center
-        float distanceFromCenter = Mathf.Abs(transform.position.x - tableCenter.x);
-        float normalizedDistance = distanceFromCenter / (tableWidth / 2f);
+        float distanceFromCenter = transform.position.x - tableCenter.x;
 
-        // If ball is veering too far to the side, gently push it back
-        if (distanceFromCenter > tableWidth / 3f)
+        // If ball is veering too far to the side, gently push it back toward center
+        if (Mathf.Abs(distanceFromCenter) > tableWidth / 4f)
         {
-            float correctionDirection = transform.position.x > tableCenter.x ? -1f : 1f;
-            correctionForce.x = correctionDirection * velocity.magnitude * assistForceMultiplier;
-
-            // Slightly dampen vertical velocity to keep ball from bouncing high
-            correctionForce.y = -0.1f * velocity.y * assistForceMultiplier;
-
+            float correctionDirection = distanceFromCenter > 0 ? -1f : 1f;
+            float correctionStrength = Mathf.Min(Mathf.Abs(distanceFromCenter) / tableWidth, 1f);
+            
+            correctionForce.x = correctionDirection * velocity.magnitude * assistForceMultiplier * correctionStrength;
+            
             rb.AddForce(correctionForce, ForceMode.Acceleration);
-
-            Debug.DrawRay(transform.position, correctionForce * 0.5f, Color.yellow);
-        }
-
-        // Also apply slight z-correction if going too far back (safety net)
-        if (velocity.z > 5f)
-        {
-            correctionForce.z = -velocity.z * assistForceMultiplier * 0.5f;
-            rb.AddForce(correctionForce, ForceMode.Acceleration);
+            
+            Debug.DrawRay(transform.position, correctionForce.normalized * 0.5f, Color.yellow);
         }
     }
 
@@ -96,6 +121,16 @@ public class AimAssist : MonoBehaviour
     public void SetAimAssistEnabled(bool enabled)
     {
         enableAimAssist = enabled;
+        Debug.Log($"[AimAssist] Aim assist: {(enabled ? "ENABLED" : "DISABLED")}");
+    }
+
+    /// <summary>
+    /// Enable or disable gravity assist dynamically
+    /// </summary>
+    public void SetGravityAssistEnabled(bool enabled)
+    {
+        enableGravityAssist = enabled;
+        Debug.Log($"[AimAssist] Gravity assist: {(enabled ? "ENABLED" : "DISABLED")}");
     }
 
     /// <summary>

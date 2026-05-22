@@ -10,6 +10,8 @@ public class PingPongManager : MonoBehaviour
     [SerializeField] private Player player1;
     [SerializeField] private Player player2;
     [SerializeField] private BallManager ballManager;
+    [SerializeField] private GameplayUIManager gameplayUIManager;
+    [SerializeField] private ServiceUIManager serviceUIManager;
     [SerializeField] private int winScore = 11;
     [SerializeField] private int winMargin = 2;
 
@@ -27,10 +29,34 @@ public class PingPongManager : MonoBehaviour
 
     // Game stats
     private int gameRallies = 0;
+    private float lastBallSpawnTime = 0f;
+    private const float BALL_SPAWN_DELAY = 0.5f; // Delay before respawning ball
     
     private void Start()
     {
+        // Auto-find UI managers if not assigned
+        if (gameplayUIManager == null)
+        {
+            gameplayUIManager = FindFirstObjectByType<GameplayUIManager>();
+        }
+        if (serviceUIManager == null)
+        {
+            serviceUIManager = FindFirstObjectByType<ServiceUIManager>();
+        }
+
         InitializeGame();
+    }
+    
+    private void Update()
+    {
+        // Prevent rapid re-spawns
+        if (currentState == GameState.Service && ballManager.GetCurrentBall() == null)
+        {
+            if (Time.time - lastBallSpawnTime > BALL_SPAWN_DELAY)
+            {
+                SpawnNewBall();
+            }
+        }
     }
 
     /// <summary>
@@ -53,6 +79,21 @@ public class PingPongManager : MonoBehaviour
         currentState = GameState.Service;
         gameRallies = 0;
 
+        // Update UI
+        if (gameplayUIManager != null)
+        {
+            gameplayUIManager.UpdateScoreDisplay(
+                player1.PlayerName, player1.Score,
+                player2.PlayerName, player2.Score
+            );
+        }
+
+        // Show service start
+        if (serviceUIManager != null)
+        {
+            serviceUIManager.ShowServiceStart(activePlayer);
+        }
+
         // Spawn initial ball
         SpawnNewBall();
 
@@ -64,10 +105,22 @@ public class PingPongManager : MonoBehaviour
     /// </summary>
     public void SpawnNewBall()
     {
+        if (ballManager == null)
+        {
+            Debug.LogError("BallManager not assigned!");
+            return;
+        }
+
         Ball ball = ballManager.SpawnBall(activePlayer.ServicePoint);
         if (ball != null)
         {
             ball.ResetBallState();
+            lastBallSpawnTime = Time.time;
+            Debug.Log($"Ball spawned for {activePlayer.PlayerName} to serve");
+        }
+        else
+        {
+            Debug.LogError("Failed to spawn ball!");
         }
     }
 
@@ -211,6 +264,24 @@ public class PingPongManager : MonoBehaviour
         Debug.Log($"Point to {player.PlayerName}! Reason: {reason}");
         Debug.Log($"Score - {player1.PlayerName}: {player1.Score} | {player2.PlayerName}: {player2.Score}");
 
+        // Show point notification
+        if (gameplayUIManager != null)
+        {
+            gameplayUIManager.ShowPointScored(player.PlayerName, player.Score);
+            gameplayUIManager.UpdateScoreDisplay(
+                player1.PlayerName, player1.Score,
+                player2.PlayerName, player2.Score
+            );
+        }
+
+        // In ping pong, serve changes every 2 points total
+        int totalPoints = player1.Score + player2.Score;
+        if (totalPoints % 4 == 2) // After every 2 points, switch server
+        {
+            SwitchActivePlayer();
+            Debug.Log($"Serve switch: {activePlayer.PlayerName} now serves");
+        }
+
         CheckWinCondition(player);
     }
 
@@ -232,7 +303,8 @@ public class PingPongManager : MonoBehaviour
     {
         Debug.Log($"{activePlayer.PlayerName} service fault!");
         AwardPoint(inactivePlayer, "Service fault");
-        SwitchActivePlayer(); // Opponent serves now
+        // Service fault ends the rally, so ResetRally will be called after AwardPoint
+        ResetRally();
     }
 
     /// <summary>
@@ -240,12 +312,21 @@ public class PingPongManager : MonoBehaviour
     /// </summary>
     private void ResetRally()
     {
+        // Reset both players' counters
         activePlayer.ResetCounters();
         inactivePlayer.ResetCounters();
+        
+        // Return to service state
         currentState = GameState.Service;
+        
+        // Spawn new ball for next service (with delay to prevent rapid respawns)
+        lastBallSpawnTime = Time.time;
 
-        // Spawn new ball for next service
-        SpawnNewBall();
+        // Show service instruction
+        if (serviceUIManager != null)
+        {
+            serviceUIManager.ShowServiceStart(activePlayer);
+        }
 
         Debug.Log($"===== NEW RALLY - {activePlayer.PlayerName} to serve =====");
     }

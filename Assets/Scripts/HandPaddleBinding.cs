@@ -59,7 +59,7 @@ public class HandPaddleBinding : MonoBehaviour
         string searchName = useLeftHand ? "Left" : "Right";
         
         // Try to find by name containing "Left" or "Right"
-        Transform[] allTransforms = FindObjectsOfType<Transform>();
+        Transform[] allTransforms = FindObjectsByType<Transform>(FindObjectsSortMode.None);
         foreach (Transform t in allTransforms)
         {
             if (t.name.Contains(searchName) && t.name.Contains("Controller"))
@@ -111,22 +111,36 @@ public class HandPaddleBinding : MonoBehaviour
     /// </summary>
     private void HideControllerVisuals()
     {
-        // Look for renderers in the controller GameObject or children
-        Renderer[] renderers = controllerTransform.GetComponentsInChildren<Renderer>();
-        foreach (Renderer renderer in renderers)
+        // Hide all children of controller EXCEPT the paddle
+        foreach (Transform child in controllerTransform)
         {
-            // Don't hide if it's the paddle itself
-            if (!renderer.gameObject.CompareTag("Paddle") && !renderer.transform.IsChildOf(paddle.transform))
-            {
-                renderer.enabled = false;
-            }
+            // Skip if this is the paddle
+            if (child.gameObject == paddle)
+                continue;
+
+            // Skip if paddle is a child of this transform
+            if (paddle.transform.IsChildOf(child))
+                continue;
+
+            // Disable this child and all its renderers
+            child.gameObject.SetActive(false);
         }
 
-        // Also look for other visual elements
+        // Also disable renderers on the controller itself
+        Renderer[] renderers = controllerTransform.GetComponents<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            renderer.enabled = false;
+        }
+
+        // Hide UI elements if any
         Image[] images = controllerTransform.GetComponentsInChildren<Image>();
         foreach (Image image in images)
         {
-            image.enabled = false;
+            if (!image.transform.IsChildOf(paddle.transform))
+            {
+                image.enabled = false;
+            }
         }
 
         Debug.Log($"[HandPaddleBinding] Controller model hidden - only paddle visible");

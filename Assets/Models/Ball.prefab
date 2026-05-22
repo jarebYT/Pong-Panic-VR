@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 6200164689968209375}
   - component: {fileID: -8280873852083683824}
   - component: {fileID: 364506502696098161}
+  - component: {fileID: 8388637630390627100}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Ball
@@ -180,6 +181,7 @@ MonoBehaviour:
   tableWidth: 3
   detectionDistance: 2
   tableCenter: {x: 0, y: 0.3, z: 0}
+  enableGravityAssist: 1
 --- !u!114 &-8280873852083683824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,3 +326,26 @@ MonoBehaviour:
   m_LimitAngularVelocity: 0
   m_MaxLinearVelocityDelta: 10
   m_MaxAngularVelocityDelta: 20
+--- !u!114 &8388637630390627100
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4227546515281826389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5632691b990b3d94bbceab48719ad99a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BallFeedback
+  enablePoofEffect: 1
+  poofDuration: 0.3
+  poofScale: 1.2
+  poofMaterial: {fileID: 2100000, guid: 53c16fb5d5c516b40a1f6a8fc34132f3, type: 2}
+  spawnParticles: 1
+  particleCount: 20
+  particleSpeed: 5
+  particleLifetime: 1
+  playSound: 1
+  poofSoundClip: {fileID: 8300000, guid: dee4968917f233b4eb05311d6341fee7, type: 3}
+  poofVolume: 0.7

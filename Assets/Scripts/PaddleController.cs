@@ -59,19 +59,32 @@ public class PaddleController : MonoBehaviour
 
         targetPosition = newPosition;
 
-        // Move paddle
-        if (useSmoothFollowing && rb != null)
+        // Move paddle using physics
+        if (rb != null)
         {
-            // Use Rigidbody for smooth physics-aware movement
-            rb.linearVelocity = (targetPosition - transform.position) * smoothSpeed;
+            // Calculate desired velocity
+            Vector3 positionDifference = targetPosition - transform.position;
+            
+            if (useSmoothFollowing)
+            {
+                // Smooth physics-aware movement using velocity
+                // Clamp the velocity to prevent jittering
+                Vector3 desiredVelocity = Vector3.ClampMagnitude(positionDifference * smoothSpeed, 10f);
+                rb.linearVelocity = desiredVelocity;
+            }
+            else
+            {
+                // Direct position update (teleport-like)
+                transform.position = Vector3.Lerp(transform.position, targetPosition, Time.fixedDeltaTime * smoothSpeed);
+            }
         }
         else
         {
-            // Direct movement (teleport-like, but still smooth)
+            // No rigidbody - direct movement
             transform.position = Vector3.Lerp(transform.position, targetPosition, Time.fixedDeltaTime * smoothSpeed);
         }
 
-        // Also match rotation (optional, but realistic)
+        // Keep rotation in sync with controller for visual feedback
         transform.rotation = controllerTransform.rotation;
 
         isTracked = true;
