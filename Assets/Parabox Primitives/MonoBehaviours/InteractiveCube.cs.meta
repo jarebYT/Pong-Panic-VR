@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 94a535e65a13da6439d6e806c9710bf4
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/MonoBehaviours/InteractiveCube.cs
+  uploadId: 130721

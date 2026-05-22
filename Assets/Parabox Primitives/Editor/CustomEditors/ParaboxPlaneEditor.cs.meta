@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2cae338e453809c4a936760769f51cc0
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/Editor/CustomEditors/ParaboxPlaneEditor.cs
+  uploadId: 130721

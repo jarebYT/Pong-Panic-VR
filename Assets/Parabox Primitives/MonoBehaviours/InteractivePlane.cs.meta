@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3c4479eb26e1bf142b4811a93839fdbe
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/MonoBehaviours/InteractivePlane.cs
+  uploadId: 130721
