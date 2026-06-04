@@ -1,0 +1,19 @@
+# ninja log v5
+1245	1344	8010962141882528	C:/Users/Sonny/Documents/GitHub/Pong-Panic-VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/355m48i6/obj/arm64-v8a/libgame.so	42d36ae64ee2d7c2
+16	943	8010962137838873	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	7e85d97cdc5b8106
+22	950	8010962137843862	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	87505c1f56430986
+38	1126	8010962139700794	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	fd848f7ed314d121
+1	962	8010962138056924	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	b4089fbb282fd7c9
+7	1012	8010962138530455	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	f995b93a556e5c1b
+32	972	8010962138150764	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	d45b0429b786e765
+27	1164	8010962140078778	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	a0e9a279dd8870d
+11	1244	8010962140862481	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	626f01c8fc2c769b
+36	1133	8010977411060343	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	87505c1f56430986
+26	1135	8010977411075401	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	7e85d97cdc5b8106
+7	1159	8010977411357019	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	b4089fbb282fd7c9
+42	1175	8010977411513303	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	d45b0429b786e765
+19	1226	8010977412010589	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	f995b93a556e5c1b
+54	1303	8010977412782124	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	fd848f7ed314d121
+47	1433	8010977414070032	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	a0e9a279dd8870d
+31	1544	8010977415175643	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	626f01c8fc2c769b
+1544	1649	8010977416269931	C:/Users/Sonny/Documents/GitHub/Pong-Panic-VR/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/355m48i6/obj/arm64-v8a/libgame.so	42d36ae64ee2d7c2
