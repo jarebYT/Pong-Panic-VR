@@ -17,7 +17,15 @@ public class TVPanelManager : MonoBehaviour
 
     void Start()
     {
-        ShowLogin();
+        if (PlayerSession.IsLoggedIn)
+        {
+            Debug.Log("Auto-login avec token: " + PlayerSession.Token);
+            ShowModeSelection();
+        }
+        else
+        {
+            ShowLogin();
+        }
     }
 
     public void ShowLogin()
