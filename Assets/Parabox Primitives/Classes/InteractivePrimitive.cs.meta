@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: f3a54e27592ad4618b4ea4085ba0d9d2
+labels:
+- drawing
+- procedural
+- primitive
+- primitives
+- draw
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/Classes/InteractivePrimitive.cs
+  uploadId: 130721

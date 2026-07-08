@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 836b6ebad045bc54abe11f92cd2ed2cd
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/MonoBehaviours/InteractiveCone.cs
+  uploadId: 130721

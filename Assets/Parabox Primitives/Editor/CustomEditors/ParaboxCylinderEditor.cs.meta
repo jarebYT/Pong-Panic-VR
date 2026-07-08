@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 471efb50eceab40e388038ca3780437d
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/Editor/CustomEditors/ParaboxCylinderEditor.cs
+  uploadId: 130721

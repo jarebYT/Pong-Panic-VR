@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6313c85d6908c4d75bb4ae0890f5dd1f
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 18576
+  packageName: Parabox Primitives
+  packageVersion: 1.1
+  assetPath: Assets/Parabox Primitives/MonoBehaviours/InteractiveCylinder.cs
+  uploadId: 130721
