@@ -84,7 +84,7 @@ public class BirdRandomMovement : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(direction);
 
             // J'ai gardé ton ajustement de 90°. (À retirer si jamais l'oiseau vole "en crabe")
-            targetRotation *= Quaternion.Euler(0, 90, 0); 
+            //targetRotation *= Quaternion.Euler(0, 90, 0); 
 
             // Appliquer la rotation de manière fluide
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * speed);
