@@ -1,156 +1,156 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 /// <summary>
-/// Handles visual feedback when ball is destroyed.
-/// Creates a "poof" effect when ball hits ground or disappears.
+/// Visual feedback for the ball's life cycle:
+///   - "Pop"  when the ball appears at the service point (scale-in with overshoot + sparks)
+///   - "Poof" when the ball leaves play (shrink + smoke burst + sound)
+///
+/// Particles use a single one-shot ParticleSystem created at runtime
+/// (no rigidbody debris — Quest 2 friendly).
 /// </summary>
 public class BallFeedback : MonoBehaviour
 {
-    [Header("Poof Effect Settings")]
+    [Header("Poof (disappear)")]
     [SerializeField] private bool enablePoofEffect = true;
     [SerializeField] private float poofDuration = 0.3f;
-    [SerializeField] private float poofScale = 1.2f;
-    [SerializeField] private Material poofMaterial; // Optional: material for effect
+    [SerializeField] private Material poofMaterial;
 
-    [Header("Particle Settings")]
+    [Header("Pop (appear)")]
+    [SerializeField] private float popDuration = 0.35f;
+
+    [Header("Particles")]
     [SerializeField] private bool spawnParticles = true;
-    [SerializeField] private int particleCount = 20;
-    [SerializeField] private float particleSpeed = 5f;
-    [SerializeField] private float particleLifetime = 1f;
+    [SerializeField] private int particleCount = 18;
+    [SerializeField] private float particleSpeed = 1.6f;
+    [SerializeField] private float particleLifetime = 0.5f;
 
-    [Header("Sound Settings")]
+    [Header("Sound")]
     [SerializeField] private bool playSound = true;
     [SerializeField] private AudioClip poofSoundClip;
     [SerializeField] private float poofVolume = 0.7f;
 
     private Renderer ballRenderer;
-    private Rigidbody rb;
-    private bool isDisappearing = false;
+    private Vector3 originalScale;
+    private bool poofPlayed;
 
-    private void Start()
+    private void Awake()
     {
         ballRenderer = GetComponent<Renderer>();
-        rb = GetComponent<Rigidbody>();
+        originalScale = transform.localScale;
     }
 
-    /// <summary>
-    /// Trigger the poof effect when ball is destroyed
-    /// </summary>
-    public void PlayPoofEffect()
+    /// <summary>Appearance effect: scale-in with a bouncy overshoot + sparks.</summary>
+    public void PlayPopEffect()
     {
-        if (isDisappearing) return;
-        
-        isDisappearing = true;
-
-        if (enablePoofEffect)
-        {
-            StartCoroutine(PoofCoroutine());
-        }
+        StopAllCoroutines();
+        poofPlayed = false;
+        StartCoroutine(PopCoroutine());
 
         if (spawnParticles)
         {
-            SpawnParticles();
+            SpawnBurst(transform.position, Color.white, particleCount / 2, particleSpeed * 0.8f, 0.35f);
+        }
+    }
+
+    /// <summary>Disappearance effect: shrink + smoke burst + optional sound.</summary>
+    public void PlayPoofEffect()
+    {
+        if (poofPlayed) return;
+        poofPlayed = true;
+
+        StopAllCoroutines();
+        if (enablePoofEffect) StartCoroutine(PoofCoroutine());
+
+        if (spawnParticles)
+        {
+            Color color = ballRenderer != null ? ballRenderer.material.color : Color.white;
+            SpawnBurst(transform.position, color, particleCount, particleSpeed, particleLifetime);
         }
 
         if (playSound && poofSoundClip != null)
         {
-            PlayPoofSound();
+            AudioSource.PlayClipAtPoint(poofSoundClip, transform.position, poofVolume);
         }
-
-        Debug.Log("[BallFeedback] Poof effect triggered");
     }
 
-    /// <summary>
-    /// Coroutine for poof animation
-    /// </summary>
+    private IEnumerator PopCoroutine()
+    {
+        float elapsed = 0f;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / popDuration);
+            // Overshoot curve: 0 → 1.25 → 1
+            float scale = t < 0.6f
+                ? Mathf.SmoothStep(0f, 1.25f, t / 0.6f)
+                : Mathf.SmoothStep(1.25f, 1f, (t - 0.6f) / 0.4f);
+            transform.localScale = originalScale * scale;
+            yield return null;
+        }
+        transform.localScale = originalScale;
+    }
+
     private IEnumerator PoofCoroutine()
     {
-        Vector3 originalScale = transform.localScale;
+        Vector3 startScale = transform.localScale;
         float elapsed = 0f;
-
         while (elapsed < poofDuration)
         {
             elapsed += Time.deltaTime;
-            float progress = elapsed / poofDuration;
-
-            // Scale up then fade out
-            float scale = Mathf.Lerp(1f, poofScale * 0.1f, progress);
-            transform.localScale = originalScale * scale;
-
-            // Fade out renderer
-            if (ballRenderer != null)
-            {
-                Color color = ballRenderer.material.color;
-                color.a = Mathf.Lerp(1f, 0f, progress);
-                ballRenderer.material.color = color;
-            }
-
+            float t = Mathf.Clamp01(elapsed / poofDuration);
+            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t);
             yield return null;
         }
-
-        // Ensure ball is invisible
-        if (ballRenderer != null)
-        {
-            ballRenderer.enabled = false;
-        }
+        if (ballRenderer != null) ballRenderer.enabled = false;
     }
 
     /// <summary>
-    /// Spawn particle effects at ball position
+    /// One-shot particle burst, detached from the ball so it survives its destruction.
     /// </summary>
-    private void SpawnParticles()
+    private void SpawnBurst(Vector3 position, Color color, int count, float speed, float lifetime)
     {
-        for (int i = 0; i < particleCount; i++)
-        {
-            // Create a small sphere for particle
-            GameObject particle = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            particle.transform.position = transform.position;
-            particle.transform.localScale = Vector3.one * 0.05f;
+        GameObject burstObject = new GameObject("BallBurstFX");
+        burstObject.transform.position = position;
 
-            // Remove collider from particle
-            Collider collider = particle.GetComponent<Collider>();
-            if (collider != null)
-            {
-                Destroy(collider);
-            }
+        ParticleSystem particles = burstObject.AddComponent<ParticleSystem>();
 
-            // Add rigidbody for physics
-            Rigidbody particleRb = particle.GetComponent<Rigidbody>();
-            if (particleRb == null)
-            {
-                particleRb = particle.AddComponent<Rigidbody>();
-            }
+        var main = particles.main;
+        main.duration = 0.1f;
+        main.loop = false;
+        main.startLifetime = lifetime;
+        main.startSpeed = speed;
+        main.startSize = 0.03f;
+        main.startColor = color;
+        main.maxParticles = count;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
 
-            // Random direction
-            Vector3 randomDirection = Random.insideUnitSphere.normalized;
-            particleRb.linearVelocity = randomDirection * particleSpeed;
+        var emission = particles.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count) });
 
-            // Color (match ball color if possible)
-            Renderer particleRenderer = particle.GetComponent<Renderer>();
-            if (particleRenderer != null && ballRenderer != null)
-            {
-                particleRenderer.material.color = ballRenderer.material.color;
-            }
+        var shape = particles.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = 0.02f;
 
-            // Destroy particle after lifetime
-            Destroy(particle, particleLifetime);
-        }
+        var sizeOverLifetime = particles.sizeOverLifetime;
+        sizeOverLifetime.enabled = true;
+        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
+            new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f)));
+
+        var renderer = particles.GetComponent<ParticleSystemRenderer>();
+        renderer.material = ResolveParticleMaterial();
+
+        particles.Play();
+        Destroy(burstObject, lifetime + 0.5f);
     }
 
-    /// <summary>
-    /// Play poof sound effect
-    /// </summary>
-    private void PlayPoofSound()
+    private Material ResolveParticleMaterial()
     {
-        AudioSource audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
+        if (poofMaterial != null) return poofMaterial;
 
-        audioSource.clip = poofSoundClip;
-        audioSource.volume = poofVolume;
-        audioSource.Play();
+        Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+        if (shader == null) shader = Shader.Find("Sprites/Default");
+        return new Material(shader);
     }
 }

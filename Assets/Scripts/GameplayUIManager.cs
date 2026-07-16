@@ -1,246 +1,182 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 using System.Collections;
+using TMPro;
+using UnityEngine;
 
 /// <summary>
-/// Manages gameplay UI feedback: score announcements, point notifications, service instructions.
-/// Displays world-space UI messages above the table for clear gameplay communication.
+/// World-space gameplay UI above the table, mirrored on both faces (P1 / P2).
+///
+/// Three slots:
+///   - scoreText:        persistent live score ("Toi  3 - 2  Adversaire  •  Service: Toi")
+///   - notificationText: transient messages (points, faults) and the countdown
+///   - serviceText:      persistent instructions ("Appuie sur la gâchette…", "À toi de servir !")
 /// </summary>
 public class GameplayUIManager : MonoBehaviour
 {
-    [SerializeField] private Canvas uiCanvas; // World-space canvas above table
-    [SerializeField] private TextMeshProUGUI notificationText; // Main notification text
-    [SerializeField] private TextMeshProUGUI scoreText; // Live score display
-    [SerializeField] private TextMeshProUGUI serviceText; // Service instructions
+    [SerializeField] private Canvas uiCanvas;
+    [SerializeField] private TextMeshProUGUI notificationText;
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI serviceText;
 
-    [Header("Notification Settings")]
-    [SerializeField] private float notificationDuration = 2.5f;
-    [SerializeField] private float fadeInDuration = 0.3f;
-    [SerializeField] private float fadeOutDuration = 0.5f;
-    [SerializeField] private Color pointNotificationColor = Color.yellow;
-    [SerializeField] private Color serviceNotificationColor = Color.cyan;
-    [SerializeField] private Color warningColor = Color.red;
+    [Header("Player 2 Panel (Back Face)")]
+    [SerializeField] private TextMeshProUGUI notificationTextP2;
+    [SerializeField] private TextMeshProUGUI scoreTextP2;
+    [SerializeField] private TextMeshProUGUI serviceTextP2;
 
-    private CanvasGroup notificationCanvasGroup;
-    private CanvasGroup scoreCanvasGroup;
-    private CanvasGroup serviceCanvasGroup;
+    [Header("Timings")]
+    [SerializeField] private float notificationDuration = 2.2f;
+    [SerializeField] private float fadeOutDuration = 0.4f;
 
-    private Coroutine currentNotificationCoroutine;
-    private Coroutine currentServiceCoroutine;
+    [Header("Colors")]
+    [SerializeField] private Color scoreColor = Color.white;
+    [SerializeField] private Color countdownColor = Color.yellow;
+    [SerializeField] private Color instructionColor = Color.cyan;
 
-    private void Start()
+    private Coroutine notificationCoroutine;
+    private Coroutine instructionPulseCoroutine;
+
+    private void Awake()
     {
-        InitializeUIElements();
+        // Awake (not Start) so the PingPongManager can safely write texts from its own Start.
+        SetSlot(scoreText, scoreTextP2, "", scoreColor, 1f);
+        SetSlot(notificationText, notificationTextP2, "", Color.white, 0f);
+        SetSlot(serviceText, serviceTextP2, "", instructionColor, 0f);
     }
 
-    /// <summary>
-    /// Initialize UI elements and canvas groups
-    /// </summary>
-    private void InitializeUIElements()
+    // ===== SCORE =====
+
+    public void UpdateScoreDisplay(string player1Name, int score1, string player2Name, int score2,
+                                   string serverName = "", string nextHitterName = "")
     {
-        if (notificationText == null)
+        string serveTag = string.IsNullOrEmpty(serverName) ? "" : $"   <size=70%>Service : {serverName} 🏓</size>";
+        string text = $"{player1Name}  <size=130%><b><color=#FFE24A>{score1} - {score2}</color></b></size>  {player2Name}{serveTag}";
+        SetSlot(scoreText, scoreTextP2, text, scoreColor, 1f);
+    }
+
+    // ===== NOTIFICATIONS / COUNTDOWN =====
+
+    /// <summary>Transient message that fades out after 'duration' seconds.</summary>
+    public void ShowMessage(string message, Color color, float duration)
+    {
+        StopNotification();
+        SetSlot(notificationText, notificationTextP2, message, color, 1f);
+        notificationCoroutine = StartCoroutine(FadeOutNotificationAfter(duration));
+    }
+
+    /// <summary>Big countdown value with a pop animation. Stays until replaced.</summary>
+    public void ShowCountdown(string value)
+    {
+        StopNotification();
+        SetSlot(notificationText, notificationTextP2, $"<size=170%><b>{value}</b></size>", countdownColor, 1f);
+        notificationCoroutine = StartCoroutine(PopThenFade());
+    }
+
+    public void ClearNotification()
+    {
+        StopNotification();
+        SetSlot(notificationText, notificationTextP2, "", Color.white, 0f);
+    }
+
+    // ===== INSTRUCTIONS =====
+
+    /// <summary>Persistent instruction with a gentle pulse (start prompt, serve prompt, game over).</summary>
+    public void ShowInstruction(string message)
+    {
+        StopInstructionPulse();
+        SetSlot(serviceText, serviceTextP2, message, instructionColor, 1f);
+        instructionPulseCoroutine = StartCoroutine(PulseInstruction());
+    }
+
+    public void ClearInstruction()
+    {
+        StopInstructionPulse();
+        SetSlot(serviceText, serviceTextP2, "", instructionColor, 0f);
+    }
+
+    // ===== LEGACY ALIASES (kept for ServiceUIManager and older callers) =====
+
+    public void ShowAlert(string message, Color color, float duration = 1.5f) => ShowMessage(message, color, duration);
+    public void ShowServiceInstruction(string playerName, string instruction) => ShowInstruction($"🏓 {playerName}\n{instruction}");
+
+    // ===== INTERNALS =====
+
+    private static void SetSlot(TextMeshProUGUI front, TextMeshProUGUI back, string text, Color color, float alpha)
+    {
+        Apply(front, text, color, alpha);
+        Apply(back, text, color, alpha);
+    }
+
+    private static void Apply(TextMeshProUGUI target, string text, Color color, float alpha)
+    {
+        if (target == null) return;
+        target.text = text;
+        color.a = 1f;
+        target.color = color;
+        target.alpha = alpha;
+        target.rectTransform.localScale = Vector3.one;
+    }
+
+    private IEnumerator FadeOutNotificationAfter(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        float elapsed = 0f;
+        while (elapsed < fadeOutDuration)
         {
-            Debug.LogWarning("[GameplayUIManager] Notification text not assigned");
-            return;
+            elapsed += Time.deltaTime;
+            float alpha = 1f - Mathf.Clamp01(elapsed / fadeOutDuration);
+            if (notificationText != null) notificationText.alpha = alpha;
+            if (notificationTextP2 != null) notificationTextP2.alpha = alpha;
+            yield return null;
         }
-
-        // Get or add CanvasGroup for smooth fading
-        notificationCanvasGroup = notificationText.GetComponent<CanvasGroup>();
-        if (notificationCanvasGroup == null)
-        {
-            notificationCanvasGroup = notificationText.gameObject.AddComponent<CanvasGroup>();
-        }
-
-        if (scoreText != null)
-        {
-            scoreCanvasGroup = scoreText.GetComponent<CanvasGroup>();
-            if (scoreCanvasGroup == null)
-            {
-                scoreCanvasGroup = scoreText.gameObject.AddComponent<CanvasGroup>();
-            }
-        }
-
-        if (serviceText != null)
-        {
-            serviceCanvasGroup = serviceText.GetComponent<CanvasGroup>();
-            if (serviceCanvasGroup == null)
-            {
-                serviceCanvasGroup = serviceText.gameObject.AddComponent<CanvasGroup>();
-            }
-            serviceText.text = "";
-        }
-
-        // Start with invisible notification
-        if (notificationCanvasGroup != null)
-        {
-            notificationCanvasGroup.alpha = 0f;
-        }
-
-        Debug.Log("[GameplayUIManager] Initialized");
+        SetSlot(notificationText, notificationTextP2, "", Color.white, 0f);
+        notificationCoroutine = null;
     }
 
-    /// <summary>
-    /// Display a point scored notification
-    /// </summary>
-    public void ShowPointScored(string playerName, int newScore)
+    private IEnumerator PopThenFade()
     {
-        StopCurrentNotification();
-
-        if (notificationText == null) return;
-
-        notificationText.text = $"{playerName} a marqué un point!\nScore: {newScore}";
-        notificationText.color = pointNotificationColor;
-
-        currentNotificationCoroutine = StartCoroutine(
-            ShowNotificationCoroutine(notificationDuration)
-        );
-
-        Debug.Log($"[GameplayUIManager] Point scored: {playerName} - {newScore}");
-    }
-
-    /// <summary>
-    /// Display a fault/invalid play notification
-    /// </summary>
-    public void ShowFault(string playerName, string reason)
-    {
-        StopCurrentNotification();
-
-        if (notificationText == null) return;
-
-        notificationText.text = $"❌ Faute {playerName}\n{reason}";
-        notificationText.color = warningColor;
-
-        currentNotificationCoroutine = StartCoroutine(
-            ShowNotificationCoroutine(notificationDuration + 0.5f)
-        );
-
-        Debug.Log($"[GameplayUIManager] Fault: {playerName} - {reason}");
-    }
-
-    /// <summary>
-    /// Display service instructions
-    /// </summary>
-    public void ShowServiceInstruction(string playerName, string instruction)
-    {
-        if (serviceText == null) return;
-
-        StopCurrentServiceInstruction();
-
-        serviceText.text = $"🎾 Service {playerName}\n{instruction}";
-        serviceText.color = serviceNotificationColor;
-
-        if (serviceCanvasGroup != null)
-        {
-            serviceCanvasGroup.alpha = 1f;
-        }
-
-        currentServiceCoroutine = StartCoroutine(
-            FadeOutCoroutine(serviceCanvasGroup, 5f)
-        );
-
-        Debug.Log($"[GameplayUIManager] Service: {playerName} - {instruction}");
-    }
-
-    /// <summary>
-    /// Update live score display
-    /// </summary>
-    public void UpdateScoreDisplay(string player1Name, int score1, string player2Name, int score2)
-    {
-        if (scoreText == null) return;
-
-        scoreText.text = $"{player1Name}: {score1} - {score2} :{player2Name}";
-    }
-
-    /// <summary>
-    /// Show a quick alert message
-    /// </summary>
-    public void ShowAlert(string message, Color color, float duration = 1.5f)
-    {
-        StopCurrentNotification();
-
-        if (notificationText == null) return;
-
-        notificationText.text = message;
-        notificationText.color = color;
-
-        currentNotificationCoroutine = StartCoroutine(
-            ShowNotificationCoroutine(duration)
-        );
-    }
-
-    /// <summary>
-    /// Coroutine: Fade in, hold, fade out notification
-    /// </summary>
-    private IEnumerator ShowNotificationCoroutine(float displayDuration)
-    {
-        if (notificationCanvasGroup == null) yield break;
-
-        // Fade in
-        yield return StartCoroutine(FadeInCoroutine(notificationCanvasGroup, fadeInDuration));
-
-        // Hold
-        yield return new WaitForSeconds(displayDuration);
-
-        // Fade out
-        yield return StartCoroutine(FadeOutCoroutine(notificationCanvasGroup, fadeOutDuration));
-    }
-
-    /// <summary>
-    /// Coroutine: Fade in
-    /// </summary>
-    private IEnumerator FadeInCoroutine(CanvasGroup canvasGroup, float duration)
-    {
-        if (canvasGroup == null) yield break;
-
+        // Quick scale pop from big to normal.
+        float duration = 0.35f;
         float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Clamp01(elapsed / duration);
+            float scale = Mathf.Lerp(1.5f, 1f, elapsed / duration);
+            if (notificationText != null) notificationText.rectTransform.localScale = Vector3.one * scale;
+            if (notificationTextP2 != null) notificationTextP2.rectTransform.localScale = Vector3.one * scale;
             yield return null;
         }
-        canvasGroup.alpha = 1f;
+        yield return FadeOutNotificationAfter(notificationDuration);
     }
 
-    /// <summary>
-    /// Coroutine: Fade out
-    /// </summary>
-    private IEnumerator FadeOutCoroutine(CanvasGroup canvasGroup, float duration)
+    private IEnumerator PulseInstruction()
     {
-        if (canvasGroup == null) yield break;
-
-        float elapsed = 0f;
-        while (elapsed < duration)
+        while (true)
         {
-            elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Clamp01(1f - (elapsed / duration));
+            float scale = Mathf.Lerp(0.97f, 1.03f, (Mathf.Sin(Time.time * 3f) + 1f) * 0.5f);
+            if (serviceText != null) serviceText.rectTransform.localScale = Vector3.one * scale;
+            if (serviceTextP2 != null) serviceTextP2.rectTransform.localScale = Vector3.one * scale;
             yield return null;
         }
-        canvasGroup.alpha = 0f;
     }
 
-    /// <summary>
-    /// Stop current notification
-    /// </summary>
-    private void StopCurrentNotification()
+    private void StopNotification()
     {
-        if (currentNotificationCoroutine != null)
+        if (notificationCoroutine != null)
         {
-            StopCoroutine(currentNotificationCoroutine);
-            currentNotificationCoroutine = null;
+            StopCoroutine(notificationCoroutine);
+            notificationCoroutine = null;
         }
+        if (notificationText != null) notificationText.rectTransform.localScale = Vector3.one;
+        if (notificationTextP2 != null) notificationTextP2.rectTransform.localScale = Vector3.one;
     }
 
-    /// <summary>
-    /// Stop current service instruction
-    /// </summary>
-    private void StopCurrentServiceInstruction()
+    private void StopInstructionPulse()
     {
-        if (currentServiceCoroutine != null)
+        if (instructionPulseCoroutine != null)
         {
-            StopCoroutine(currentServiceCoroutine);
-            currentServiceCoroutine = null;
+            StopCoroutine(instructionPulseCoroutine);
+            instructionPulseCoroutine = null;
         }
+        if (serviceText != null) serviceText.rectTransform.localScale = Vector3.one;
+        if (serviceTextP2 != null) serviceTextP2.rectTransform.localScale = Vector3.one;
     }
 }

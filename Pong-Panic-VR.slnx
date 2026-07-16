@@ -13,9 +13,9 @@
   <Project Path="Unity.RenderPipelines.Universal.2D.Runtime.csproj" />
   <Project Path="Unity.XR.Simulation.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
-  <Project Path="Unity.Splines.csproj" />
   <Project Path="Unity.PerformanceTesting.Editor.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
+  <Project Path="Unity.Splines.csproj" />
   <Project Path="Unity.XR.OpenXR.csproj" />
   <Project Path="Unity.XR.ARFoundation.VisualScripting.Editor.csproj" />
   <Project Path="Unity.Burst.csproj" />
@@ -93,6 +93,7 @@
   <Project Path="Unity.XR.OpenXR.Features.MetaQuestSupport.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.XR.OpenXR.Features.RuntimeDebugger.csproj" />
   <Project Path="UnityEngine.SpatialTracking.csproj" />
   <Project Path="Unity.XR.OpenXR.Features.OculusQuestSupport.Editor.csproj" />
@@ -112,7 +113,6 @@
   <Project Path="Unity.XR.Hands.Analytics.Hooks.Editor.csproj" />
   <Project Path="Unity.PlasticSCM.Editor.Entities.csproj" />
   <Project Path="Unity.XR.OpenXR.Features.MockRuntime.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="UnityEditor.SpatialTracking.csproj" />
   <Project Path="Unity.Rendering.LightTransport.Editor.csproj" />
   <Project Path="Unity.XR.Interaction.Toolkit.Samples.Hands.Editor.csproj" />

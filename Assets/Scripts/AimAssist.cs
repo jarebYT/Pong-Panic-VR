@@ -1,162 +1,90 @@
 using UnityEngine;
 
 /// <summary>
-/// Ball trajectory correction system for VR precision.
-/// Applies subtle force corrections to keep ball on table when trajectory is poor.
-/// This compensates for VR hand imprecision without making the game trivial.
+/// VR aim assist for the ball.
+/// When the player hits the ball, the raw physics velocity is blended toward an
+/// ideal ballistic arc that lands on the opponent's side of the table. The arc is
+/// computed with the ball's own slowed gravity (NOT Physics.gravity), so the
+/// assisted trajectory matches what actually happens in flight.
+///
+/// The assist scales with how well the player's hit is already aimed: a hit
+/// roughly toward the opponent gets fully assisted, a hit sideways/backwards is
+/// barely corrected, so the game stays fair and readable.
 /// </summary>
 public class AimAssist : MonoBehaviour
 {
-    [Header("Aim Assist Settings")]
     [SerializeField] private bool enableAimAssist = true;
-    [SerializeField] private float assistForceMultiplier = 0.12f;  // Subtle correction
-    [SerializeField] private float tableWidth = 1.525f;            // Standard ping pong table width
-    [SerializeField] private float detectionDistance = 3f;         // How far to look ahead
-    [SerializeField] private Vector3 tableCenter = Vector3.zero;   // Center of table in world space
 
-    [Header("Gravity Assist")]
-    [SerializeField] private bool enableGravityAssist = true;
+    [Header("Assisted Arc")]
+    [Tooltip("Horizontal speed range for the ideal arc (clamped from the player's real hit speed).")]
+    [SerializeField] private float minHorizontalSpeed = 2.6f;
+    [SerializeField] private float maxHorizontalSpeed = 6.5f;
+    [Tooltip("Random spread of the landing point, as a fraction of the target side's size (0 = always dead center).")]
+    [Range(0f, 0.45f)]
+    [SerializeField] private float targetSpread = 0.28f;
 
-    private Rigidbody rb;
-    private Ball ball;
-
-    private void Start()
+    /// <summary>
+    /// Blend the raw hit velocity toward an ideal arc landing on the target table side.
+    /// </summary>
+    /// <param name="startPosition">Ball position at the moment of the hit.</param>
+    /// <param name="rawVelocity">Velocity produced by the physical paddle contact.</param>
+    /// <param name="targetSide">World bounds of the opponent's table side collider.</param>
+    /// <param name="gravity">Positive magnitude of the ball's custom gravity (m/s²).</param>
+    /// <param name="strength">0 = no assist, 1 = fully guided.</param>
+    public Vector3 ComputeAssistedVelocity(Vector3 startPosition, Vector3 rawVelocity, Bounds targetSide, float gravity, float strength)
     {
-        rb = GetComponent<Rigidbody>();
-        ball = GetComponent<Ball>();
-
-        if (rb == null)
-        {
-            Debug.LogWarning("AimAssist: Rigidbody not found on ball");
-            enabled = false;
-            return;
-        }
-
-        // Apply gravity assist by modifying physics
-        if (enableGravityAssist)
-        {
-            ApplyGravityAssist();
-        }
-
-        Debug.Log($"[AimAssist] Initialized - Aim Assist: {enableAimAssist}, Gravity Assist: {enableGravityAssist}");
-    }
-
-    private void FixedUpdate()
-    {
-        if (!enableAimAssist || rb == null)
-            return;
-
-        // Check if ball is moving and in a meaningful trajectory
-        float speed = rb.linearVelocity.magnitude;
-        if (speed < 0.5f)
-            return;
-
-        // Apply aim assist
-        if (ShouldApplyCorrection())
-        {
-            ApplyTrajectoryCorrection();
-        }
+        return ComputeAssistedVelocity(startPosition, rawVelocity, targetSide, gravity, strength, out _, out _);
     }
 
     /// <summary>
-    /// Apply stronger gravity for easier gameplay
+    /// Same as above, but also reports the chosen landing point and whether the
+    /// assist was actually applied (used for the in-flight steering assist).
     /// </summary>
-    private void ApplyGravityAssist()
+    public Vector3 ComputeAssistedVelocity(Vector3 startPosition, Vector3 rawVelocity, Bounds targetSide, float gravity, float strength,
+                                           out Vector3 landingTarget, out bool assisted)
     {
-        if (rb != null)
-        {
-            // Increase downward gravity
-            rb.mass = Mathf.Max(rb.mass * 0.5f, 0.001f); // Lighter ball falls faster
-            Debug.Log($"[AimAssist] Gravity assist applied - mass reduced to {rb.mass}");
-        }
+        landingTarget = targetSide.center;
+        landingTarget.y = targetSide.max.y;
+        assisted = false;
+
+        if (!enableAimAssist || strength <= 0.01f || gravity <= 0.01f)
+            return rawVelocity;
+
+        // Landing target: center of the opponent side + a little spread so returns vary.
+        Vector3 target = targetSide.center;
+        target.x += Random.Range(-targetSide.extents.x, targetSide.extents.x) * targetSpread * 2f;
+        target.z += Random.Range(-targetSide.extents.z, targetSide.extents.z) * targetSpread * 2f;
+        target.y = targetSide.max.y + 0.02f;
+        landingTarget = target;
+
+        Vector3 toTarget = target - startPosition;
+        Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z);
+        float distanceXZ = toTargetXZ.magnitude;
+        if (distanceXZ < 0.15f) return rawVelocity;
+
+        // Scale the assist with hit alignment: don't hijack a hit aimed the wrong way.
+        Vector3 rawXZ = new Vector3(rawVelocity.x, 0f, rawVelocity.z);
+        float alignment = rawXZ.sqrMagnitude > 0.001f
+            ? Vector3.Dot(rawXZ.normalized, toTargetXZ.normalized)
+            : 1f; // straight vertical hit: let the assist carry it over
+        float effectiveStrength = strength * Mathf.InverseLerp(-0.4f, 0.4f, alignment);
+        if (effectiveStrength <= 0.01f) return rawVelocity;
+
+        // Ideal ballistic arc: keep the player's horizontal energy, solve the
+        // vertical speed so the ball lands exactly on the target under 'gravity'.
+        float horizontalSpeed = Mathf.Clamp(rawXZ.magnitude, minHorizontalSpeed, maxHorizontalSpeed);
+        float flightTime = distanceXZ / horizontalSpeed;
+        float verticalSpeed = (toTarget.y + 0.5f * gravity * flightTime * flightTime) / flightTime;
+
+        Vector3 idealVelocity = toTargetXZ.normalized * horizontalSpeed;
+        idealVelocity.y = verticalSpeed;
+
+        assisted = true;
+        return Vector3.Lerp(rawVelocity, idealVelocity, effectiveStrength);
     }
 
-    /// <summary>
-    /// Check if ball needs trajectory correction
-    /// </summary>
-    private bool ShouldApplyCorrection()
+    public void SetAimAssistEnabled(bool value)
     {
-        Vector3 velocity = rb.linearVelocity;
-
-        // Only assist if ball is traveling relatively horizontally (not straight down)
-        if (Mathf.Abs(velocity.y) > Mathf.Abs(velocity.x) * 2f)
-            return false;
-
-        // Check if ball is nearing the table (predict 0.15 seconds ahead)
-        Vector3 predictedPosition = transform.position + (velocity * 0.15f);
-        
-        // Ball should be approaching table area (Y close to 0, X and Z in bounds)
-        return Mathf.Abs(predictedPosition.y) < 1f && 
-               Mathf.Abs(predictedPosition.x - tableCenter.x) < detectionDistance;
-    }
-
-    /// <summary>
-    /// Apply subtle correction to keep ball on table
-    /// </summary>
-    private void ApplyTrajectoryCorrection()
-    {
-        Vector3 velocity = rb.linearVelocity;
-        Vector3 correctionForce = Vector3.zero;
-
-        // Calculate distance from table center
-        float distanceFromCenter = transform.position.x - tableCenter.x;
-
-        // If ball is veering too far to the side, gently push it back toward center
-        if (Mathf.Abs(distanceFromCenter) > tableWidth / 4f)
-        {
-            float correctionDirection = distanceFromCenter > 0 ? -1f : 1f;
-            float correctionStrength = Mathf.Min(Mathf.Abs(distanceFromCenter) / tableWidth, 1f);
-            
-            correctionForce.x = correctionDirection * velocity.magnitude * assistForceMultiplier * correctionStrength;
-            
-            rb.AddForce(correctionForce, ForceMode.Acceleration);
-            
-            Debug.DrawRay(transform.position, correctionForce.normalized * 0.5f, Color.yellow);
-        }
-    }
-
-    /// <summary>
-    /// Enable or disable aim assist dynamically
-    /// </summary>
-    public void SetAimAssistEnabled(bool enabled)
-    {
-        enableAimAssist = enabled;
-        Debug.Log($"[AimAssist] Aim assist: {(enabled ? "ENABLED" : "DISABLED")}");
-    }
-
-    /// <summary>
-    /// Enable or disable gravity assist dynamically
-    /// </summary>
-    public void SetGravityAssistEnabled(bool enabled)
-    {
-        enableGravityAssist = enabled;
-        Debug.Log($"[AimAssist] Gravity assist: {(enabled ? "ENABLED" : "DISABLED")}");
-    }
-
-    /// <summary>
-    /// Adjust assist strength (0-1, where 1 is maximum assistance)
-    /// </summary>
-    public void SetAssistStrength(float strength)
-    {
-        assistForceMultiplier = Mathf.Clamp01(strength) * 0.25f;
-    }
-
-    /// <summary>
-    /// Set table position for assist calculations
-    /// </summary>
-    public void SetTableCenter(Vector3 center)
-    {
-        tableCenter = center;
-    }
-
-    /// <summary>
-    /// Debug visualization
-    /// </summary>
-    private void OnDrawGizmos()
-    {
-        if (!enableAimAssist) return;
-
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(tableCenter, new Vector3(tableWidth, 0.1f, 2f));
+        enableAimAssist = value;
     }
 }

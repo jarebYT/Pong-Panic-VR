@@ -12,9 +12,6 @@ public class ServiceUIManager : MonoBehaviour
     [Header("Service Instructions")]
     [SerializeField] private string grabBallInstruction = "Saisis la balle et lance!";
 
-    [Header("Service Animation Settings")]
-    [SerializeField] private float servicePulseSpeed = 2f;
-
     private Coroutine currentServiceAnimation;
 
     private void Start()
@@ -61,14 +58,8 @@ public class ServiceUIManager : MonoBehaviour
     /// </summary>
     private IEnumerator ServicePulseAnimation()
     {
-        while (true)
-        {
-            // Pulse effect by showing/hiding service text repeatedly
-            for (float t = 0; t < 1f; t += Time.deltaTime * servicePulseSpeed)
-            {
-                yield return null;
-            }
-        }
+        // Pulsing is now handled beautifully inside GameplayUIManager
+        yield break;
     }
 
     /// <summary>
