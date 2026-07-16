@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<< HEAD
 guid: b9ada708dab15fd44bb86f9a91479f2c
+=======
+guid: c3620fb3049d0db478bc7eaa2036c7d5
+>>>>>>> feature/game-test
 DefaultImporter:
   externalObjects: {}
   userData: 

@@ -1,10 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Represents a player in the ping pong game with their score, paddle, and game state.
-/// The paddle is bound to the player's chosen hand (left or right) via HandPaddleBinding.
-/// Each player can independently choose which hand to use for their paddle.
-/// Assign via Inspector, don't use constructor.
+/// Represents a player (human or AI) with their score, paddle, table side and service point.
+/// Also enforces the physics setup the paddle needs for precise ball collisions:
+/// tag, kinematic rigidbody with speculative CCD, and a velocity tracker.
 /// </summary>
 public class Player : MonoBehaviour
 {
@@ -13,12 +12,7 @@ public class Player : MonoBehaviour
     [SerializeField] private BoxCollider sideCollider;
     [SerializeField] private Transform servicePoint;
     [SerializeField] private HandPaddleBinding handPaddleBinding;
-    
-    // Runtime counters
-    public int countBallTouch { get; set; }
-    public int countServiceSideTouch { get; set; }
 
-    // Properties for access
     public int Score => score;
     public GameObject Paddle => paddle;
     public BoxCollider SideCollider => sideCollider;
@@ -26,63 +20,67 @@ public class Player : MonoBehaviour
     public HandPaddleBinding HandPaddleBinding => handPaddleBinding;
     public string PlayerName => gameObject.name;
 
-    /// <summary>
-    /// Initialize player with score and reset counters.
-    /// Auto-finds HandPaddleBinding if not assigned.
-    /// Call this when starting a new game.
-    /// </summary>
+    /// <summary>Reset the score and make sure the paddle is physically ready. Called at match start.</summary>
     public void Initialize()
     {
         score = 0;
-        countBallTouch = 0;
-        countServiceSideTouch = 0;
 
-        // Auto-find HandPaddleBinding if not assigned
-        if (handPaddleBinding == null && paddle != null)
+        if (handPaddleBinding == null)
         {
             handPaddleBinding = GetComponent<HandPaddleBinding>();
         }
 
-        // Verify binding was successful
-        if (handPaddleBinding != null && !handPaddleBinding.IsSetup())
-        {
-            Debug.LogWarning($"[Player] {gameObject.name} HandPaddleBinding not properly setup!");
-        }
+        EnsurePaddlePhysics();
     }
 
     /// <summary>
-    /// Switch paddle between left and right hand at runtime.
-    /// Useful if a player wants to change their hand choice mid-game or after setup.
+    /// Precise VR collisions need the paddle to be a proper moving collider:
+    ///   - tagged "Paddle" so the ball recognizes it,
+    ///   - kinematic rigidbody (mandatory for a collider moved by hand/AI),
+    ///   - speculative CCD so fast swings don't tunnel through the ball,
+    ///   - a PaddleVelocityTracker so the swing speed transfers to the ball.
     /// </summary>
-    public void SwitchHand()
+    private void EnsurePaddlePhysics()
     {
-        if (handPaddleBinding != null)
+        if (paddle == null)
         {
-            handPaddleBinding.SwitchHand();
-            Debug.Log($"[Player] {gameObject.name} switched hand - now using {(handPaddleBinding.IsLeftHand() ? "LEFT" : "RIGHT")} hand");
+            Debug.LogError($"[Player] {PlayerName} has no paddle assigned!");
+            return;
+        }
+
+        if (!paddle.CompareTag("Paddle")) paddle.tag = "Paddle";
+
+        Rigidbody paddleRb = paddle.GetComponent<Rigidbody>();
+        if (paddleRb == null) paddleRb = paddle.AddComponent<Rigidbody>();
+        paddleRb.isKinematic = true;
+        paddleRb.useGravity = false;
+        paddleRb.interpolation = RigidbodyInterpolation.Interpolate;
+        paddleRb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+        if (paddle.GetComponent<PaddleVelocityTracker>() == null)
+        {
+            paddle.AddComponent<PaddleVelocityTracker>();
+        }
+
+        if (paddle.GetComponentInChildren<Collider>() == null)
+        {
+            Debug.LogWarning($"[Player] {PlayerName}'s paddle has no collider - the ball will fly through it!");
         }
     }
 
-    /// <summary>
-    /// Add a point to this player's score
-    /// </summary>
     public void AddScore()
     {
         score++;
     }
 
-    /// <summary>
-    /// Reset counters for new rally
-    /// </summary>
-    public void ResetCounters()
+    public void SwitchHand()
     {
-        countBallTouch = 0;
-        countServiceSideTouch = 0;
+        if (handPaddleBinding != null)
+        {
+            handPaddleBinding.SwitchHand();
+        }
     }
 
-    /// <summary>
-    /// Get score string for display
-    /// </summary>
     public string GetScoreDisplay()
     {
         return $"{PlayerName}: {score}";

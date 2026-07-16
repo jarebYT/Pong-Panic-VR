@@ -12,9 +12,7 @@ public class VRControllerSetup : MonoBehaviour
     [SerializeField] private Player player1;
     [SerializeField] private Player player2;
 
-    [Header("Controller Search Settings")]
-    [SerializeField] private bool autoFindControllers = true;
-    [SerializeField] private bool useHandTracking = false; // Set to true if using hand tracking instead of controllers
+    // [DEPRECATED] This script is no longer used - use HandPaddleBinding instead
 
     private Transform leftControllerTransform;
     private Transform rightControllerTransform;
