@@ -1218,9 +1218,8 @@ MonoBehaviour:
   - {fileID: 3451029652778698079}
   - {fileID: -3873002391498935951}
   - {fileID: 4029321852219781297}
-- {fileID: 7624903572706960340}
-- {fileID: 7805536383577108397}
-- {fileID: 4631108102321228446}
+  - {fileID: 7805536383577108397}
+  - {fileID: 4631108102321228446}
   - {fileID: 6886245988355559344}
   - {fileID: 6746228182035495572}
   - {fileID: 8877639857907081683}
@@ -1253,13 +1252,13 @@ MonoBehaviour:
   - {fileID: -4603662951859827220}
   customLoaderName: 
   m_renderMode: 1
-  m_latencyOptimization: 1
+  m_latencyOptimization: 0
   m_autoColorSubmissionMode: 1
   m_colorSubmissionModes:
     m_List: 00000000
   m_depthSubmissionMode: 0
   m_spacewarpMotionVectorTextureFormat: 0
-  m_optimizeBufferDiscards: 1
+  m_optimizeBufferDiscards: 0
   m_symmetricProjection: 0
   m_optimizeMultiviewRenderRegions: 0
   m_multiviewRenderRegionsOptimizationMode: 0
