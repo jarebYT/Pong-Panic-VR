@@ -14,7 +14,21 @@ public class LobbyBounds : MonoBehaviour
     void Start()
     {
         bounds = GetComponent<Collider>();
-        volume.profile.TryGet(out vignette);
+
+        if (volume == null)
+        {
+            Debug.LogError("Volume non assigné !");
+            enabled = false;
+            return;
+        }
+
+        if (!volume.profile.TryGet(out vignette))
+        {
+            Debug.LogError("Aucun Vignette trouvé dans le Volume Profile !");
+            enabled = false;
+            return;
+        }
+
         vignette.intensity.value = 0f;
     }
 
