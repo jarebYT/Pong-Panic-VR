@@ -7,12 +7,12 @@ public class GameModeManager : MonoBehaviour
     public void OnSoloClick()
     {
         Debug.Log("Solo Mode Selected");
-        SceneManager.LoadScene("SoloMode");
+        SceneManager.LoadScene("Forest");
     }
     public void OnOnlineClick()
     {
         Debug.Log("1v1 Mode Selected");
-        SceneManager.LoadScene("Online");
+        SceneManager.LoadScene("Aquarium");
     }
     public void OnTrainingClick()
     {

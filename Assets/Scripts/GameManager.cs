@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     {
         // SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().buildIndex);
         // Charger la scène spécifiée en mode additif mais va peux être casser quand il faudra changer de scène
-        SceneManager.LoadScene(sceneIndex, LoadSceneMode.Additive);
+        SceneManager.LoadScene(sceneIndex, LoadSceneMode.Single);
     }
 
     public void ExitGame()
