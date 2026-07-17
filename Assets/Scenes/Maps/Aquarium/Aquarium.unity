@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: a89d27563bf164e46a81d5c9c8f0cbeb, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -3257,6 +3257,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4559315236745681718, guid: d62985716b738cb4492aa932672a44c0, type: 3}
+      propertyPath: openingVoiceClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 63b168edf9b339748abe43aa7904322c, type: 3}
     - target: {fileID: 7744346503292329759, guid: d62985716b738cb4492aa932672a44c0, type: 3}
       propertyPath: m_Name
       value: Gameplay 1
